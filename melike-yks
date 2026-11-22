@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Melike YKS" />
+  <title>Melike • TYT & AYT Asistanı</title>
+  <style>
+    :root {
+      --bg: #f8f5ff;
+      --glass: rgba(255, 255, 255, 0.78);
+      --glass-strong: rgba(255, 255, 255, 0.92);
+      --border: rgba(233, 213, 255, 0.85);
+      --shadow: 0 8px 28px rgba(139, 92, 246, 0.09);
+      --text: #271f3b;
+      --muted: #7c7296;
+      --accent: #8b5cf6;
+      --accent-light: #a78bfa;
+      --accent-soft: #f3e8ff;
+      --mint: #10b981;
+      --rose: #f43f5e;
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: calc(94px + env(safe-area-inset-bottom));
+    }
+
+    .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(75px); opacity: 0.55; }
+    .b1 { width: 300px; height: 300px; background: #e9d5ff; top: -70px; left: -60px; }
+    .b2 { width: 280px; height: 280px; background: #ddd6fe; top: 220px; right: -70px; }
+    .b3 { width: 250px; height: 250px; background: #fce7f3; bottom: 50px; left: 10%; }
+
+    .app { max-width: 520px; margin: 0 auto; padding: calc(16px + env(safe-area-inset-top)) 16px 20px; }
+
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding: 0 4px; }
+    .brand { font-size: 23px; font-weight: 800; letter-spacing: -0.4px; }
+    .brand span { color: var(--accent); }
+    .pill-date { font-size: 12px; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 6px 12px; border-radius: 99px; }
+
+    .card {
+      background: var(--glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow);
+    }
+    .card-title {
+      font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px;
+      color: var(--muted); margin: 0 0 12px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .quote-box {
+      background: linear-gradient(135deg, #8b5cf6, #c084fc);
+      color: #fff; border-radius: var(--radius); padding: 16px 18px; margin-bottom: 14px;
+      box-shadow: 0 10px 24px rgba(139, 92, 246, 0.28);
+    }
+    .quote-box p { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.45; }
+    .quote-box small { display: block; margin-top: 6px; opacity: 0.85; font-size: 12px; }
+
+    /* Günlük Hedef Çubukları */
+    .goal-item { margin-bottom: 12px; }
+    .goal-item:last-child { margin-bottom: 0; }
+    .goal-top { display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+    .bar-bg { height: 10px; background: #ede9fe; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #c084fc); border-radius: 99px; transition: width 0.3s; }
+    .goal-btns { display: flex; gap: 6px; margin-top: 6px; }
+    .mini-btn {
+      border: none; background: var(--accent-soft); color: var(--accent);
+      font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 10px; cursor: pointer;
+    }
+
+    /* Ders Programı */
+    .day-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+    .day-tabs::-webkit-scrollbar { display: none; }
+    .d-tab {
+      flex: 0 0 auto; padding: 7px 13px; border-radius: 99px; border: 1px solid var(--border);
+      background: #fff; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer;
+    }
+    .d-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .lesson-row {
+      display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 14px;
+      background: rgba(255,255,255,0.85); margin-bottom: 7px; border-left: 4px solid var(--accent-light);
+    }
+    .l-time { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 78px; }
+    .l-name { font-size: 14px; font-weight: 700; flex: 1; }
+    .l-teacher { font-size: 11px; color: var(--muted); background: var(--accent-soft); padding: 3px 8px; border-radius: 99px; font-weight: 600; }
+
+    /* Formlar */
+    input, select, textarea {
+      width: 100%; padding: 11px 12px; border-radius: 13px; border: 1px solid #e9d5ff;
+      background: rgba(255,255,255,0.9); font-size: 14px; color: var(--text); font-family: inherit; margin-bottom: 8px; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--accent); }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .btn {
+      width: 100%; border: none; border-radius: 14px; padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; transition: transform 0.12s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff; }
+    .btn-soft { background: var(--accent-soft); color: var(--accent); }
+
+    /* Grafik Çubukları */
+    .chart-wrap { display: flex; align-items: flex-end; gap: 8px; height: 110px; padding-top: 10px; }
+    .chart-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .chart-bar { width: 100%; max-width: 34px; border-radius: 8px 8px 4px 4px; background: linear-gradient(180deg, var(--accent), #c084fc); min-height: 6px; }
+    .chart-lbl { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; }
+    .chart-val { font-size: 10px; font-weight: 800; color: var(--accent); }
+
+    /* Liste & Fotoğraf Kartları */
+    .list-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 9px 0; border-bottom: 1px solid #f3e8ff; font-size: 13px;
+    }
+    .list-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .check {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--accent);
+      display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: #fff; font-size: 12px; font-weight: 700;
+    }
+    .check.done { background: var(--mint); border-color: var(--mint); }
+    .del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
+    .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
+    .badge-warn { background: #ffe4e6; color: var(--rose); }
+
+    .q-photo { width: 100%; border-radius: 14px; margin-top: 8px; max-height: 220px; object-fit: cover; border: 1px solid #e9d5ff; }
+
+    /* Su Takibi */
+    .water-row { display: flex; gap: 6px; }
+    .cup { flex: 1; height: 34px; border-radius: 10px; background: #f3e8ff; display: grid; place-items: center; cursor: pointer; }
+    .cup.filled { background: linear-gradient(135deg, #8b5cf6, #60a5fa); color: #fff; }
+
+    /* Timer */
+    .timer-num {
+      font-size: 52px; font-weight: 800; text-align: center; margin: 8px 0 14px;
+      background: linear-gradient(135deg, var(--accent), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .bottom-nav {
+      position: fixed; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
+      width: calc(100% - 28px); max-width: 492px;
+      background: var(--glass-strong); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+      border: 1px solid var(--border); border-radius: 26px; padding: 8px 6px;
+      display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.16); z-index: 50;
+    }
+    .nav-btn {
+      background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; padding: 6px 0; border-radius: 18px;
+    }
+    .nav-btn .ico { font-size: 19px; }
+    .nav-btn.active { color: var(--accent); background: var(--accent-soft); }
+    .muted { color: var(--muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
+
+  <div class="app">
+    <header>
+      <div class="brand">Melike <span>YKS</span> ✨</div>
+      <div class="pill-date" id="todayStr"></div>
+    </header>
+
+    <!-- 1. BUGÜN & PROGRAM -->
+    <section id="view-today" class="view active">
+      <div class="quote-box">
+        <p id="dailyQuote"></p>
+        <small>💜 Bugün çözdüğün her soru seni hayaline yaklaştırıyor.</small>
+      </div>
+
+      <!-- Günlük Soru Hedefleri -->
+      <div class="card">
+        <div class="card-title"><span>🎯 Günlük Rutin Hedeflerin</span><button class="mini-btn" onclick="resetDaily()">Sıfırla</button></div>
+        <div class="goal-item">
+          <div class="goal-top"><span>📖 Paragraf</span><span id="paraText">0 / 30</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="paraBar" style="width:0%"></div></div>
+          <div class="goal-btns">
+            <button class="mini-btn" onclick="addGoal('para', 5)">+5</button>
+            <button class="mini-btn" onclick="addGoal('para', 10)">+10</button>
+            <button class="mini-btn" onclick="addGoal('para', 30)">Tamamla</button>
+          </div>
+        </div>
+        <div class="goal-item">
+          <div class="goal-top"><span>🧮 Problem</span><span id="probText">0 / 20</span></div>
+          <div class="bar-bg"><div class="bar-fill" id="probBar" style="width:0%"></div></div>
+          <div class="goal-btns">
+            <button class="mini-btn" onclick="addGoal('prob', 5)">+5</button>
+            <button class="mini-btn" onclick="addGoal('prob', 10)">+10</button>
+            <button class="mini-btn" onclick="addGoal('prob', 20)">Tamamla</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Haftalık Dershane Programı -->
+      <div class="card">
+        <div class="card-title"><span>📅 Dershane Programı</span><span class="badge">40 dk ders / 10 dk mola</span></div>
+        <div class="day-tabs" id="dayTabs"></div>
+        <div id="scheduleList"></div>
+      </div>
+
+      <!-- Yaklaşan Denemeler -->
+      <div class="card">
+        <div class="card-title"><span>📝 Deneme & Ünite Sınavları</span></div>
+        <div class="grid-2">
+          <input type="text" id="exName" placeholder="Örn: 345 TYT, Ünite Sınavı" />
+          <input type="date" id="exDate" />
+        </div>
+        <button class="btn btn-soft" onclick="addExam()">+ Deneme Ekle</button>
+        <div id="examList" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Su Takibi -->
+      <div class="card">
+        <div class="card-title"><span>💧 Su Takibi</span><span class="muted" id="waterText">0 / 8</span></div>
+        <div class="water-row" id="waterRow"></div>
+      </div>
+    </section>
+
+    <!-- 2. SORU, NET & HOCAYA SOR -->
+    <section id="view-study" class="view">
+      <!-- Hocaya Sor Hatırlatıcısı -->
+      <div class="card">
+        <div class="card-title"><span>🙋‍♀️ Hocaya Sorulacaklar</span><span class="badge badge-warn" id="askCount">0 bekleyen</span></div>
+        <div id="askList"></div>
+      </div>
+
+      <!-- TYT / AYT Soru & Net Kaydı -->
+      <div class="card">
+        <div class="card-title"><span>📊 TYT / AYT Soru & Net Ekle</span></div>
+        <div class="grid-2">
+          <select id="stType">
+            <option value="TYT">TYT</option>
+            <option value="AYT">AYT</option>
+          </select>
+          <select id="stSubj">
+            <option value="Türkçe">Türkçe (Başar Hoca)</option>
+            <option value="Mat 1">Mat 1 (Yüksel Hoca)</option>
+            <option value="Mat 2">Mat 2 (Burak Hoca)</option>
+            <option value="Geometri">Geometri (Mustafa Hoca)</option>
+            <option value="Fizik">Fizik (İbrahim Hoca)</option>
+            <option value="Kimya">Kimya (Yusuf Hoca)</option>
+            <option value="Biyoloji">Biyoloji (Pervin Hoca)</option>
+            <option value="Tarih">Tarih (Kubilay Hoca)</option>
+            <option value="Coğrafya">Coğrafya (Tuğba Hoca)</option>
+          </select>
+        </div>
+        <input type="text" id="stTopic" placeholder="Konu adı (örn: Türev, Paragraf, Dalgalar...)" />
+        <div class="grid-3">
+          <input type="number" id="stRight" placeholder="Doğru" />
+          <input type="number" id="stWrong" placeholder="Yanlış" />
+          <input type="number" id="stMin" placeholder="Süre (dk)" />
+        </div>
+        <button class="btn btn-primary" onclick="addStudyLog()">+ Kaydet & Neti Hesapla</button>
+      </div>
+
+      <!-- Grafik & Son Kayıtlar -->
+      <div class="card">
+        <div class="card-title"><span>📈 Son Çalışmalarım (Soru Grafiği)</span></div>
+        <div class="chart-wrap" id="studyChart"></div>
+        <div id="studyList" style="margin-top:12px;"></div>
+      </div>
+    </section>
+
+    <!-- 3. SORU ARŞİVİ, ÖDEVLER & KAYNAKLAR -->
+    <section id="view-archive" class="view">
+      <!-- Yanlış & Güzel Sorular Fotoğraf Arşivi -->
+      <div class="card">
+        <div class="card-title"><span>📸 Yanlış & Güzel Soru Arşivi</span></div>
+        <div class="grid-2">
+          <select id="qSubj">
+            <option value="Fizik">Fizik</option><option value="Mat 1">Mat 1</option>
+            <option value="Mat 2">Mat 2</option><option value="Geometri">Geometri</option>
+            <option value="Kimya">Kimya</option><option value="Biyoloji">Biyoloji</option>
+            <option value="Türkçe">Türkçe</option><option value="Tarih">Tarih</option>
+            <option value="Coğrafya">Coğrafya</option>
+          </select>
+          <select id="qKind">
+            <option value="Yanlış Soru">❌ Yanlış Soru</option>
+            <option value="Güzel Soru">⭐ Güzel Soru</option>
+          </select>
+        </div>
+        <input type="text" id="qNote" placeholder="Kısa not (örn: Hocaya sorulacak, güzel yorum)" />
+        <input type="file" id="qPhoto" accept="image/*" />
+        <button class="btn btn-primary" onclick="addQuestionPhoto()">+ Soruyu Arşive Ekle</button>
+        <div id="photoList" style="margin-top:12px;"></div>
+      </div>
+
+      <!-- Ödevler -->
+      <div class="card">
+        <div class="card-title"><span>📌 Haftalık Ödevler</span></div>
+        <input type="text" id="hwText" placeholder="Örn: Yusuf Hoca Kimya 2 test..." />
+        <button class="btn btn-soft" onclick="addSimple('homeworks', 'hwText')">+ Ödev Ekle</button>
+        <div id="list-homeworks" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- Soru Kaynakları -->
+      <div class="card">
+        <div class="card-title"><span>📚 Soru Kaynaklarım</span></div>
+        <input type="text" id="bkText" placeholder="Örn: 345 TYT Mat, Bilgi Sarmal Fizik..." />
+        <button class="btn btn-soft" onclick="addSimple('books', 'bkText')">+ Kaynak Ekle</button>
+        <div id="list-books" style="margin-top:10px;"></div>
+      </div>
+    </section>
+
+    <!-- 4. ODAK & UYKU -->
+    <section id="view-focus" class="view">
+      <div class="card">
+        <div class="card-title"><span>⏱ Çalışma Teknikleri & Sayaç</span><span class="badge" id="modeBadge">Pomodoro</span></div>
+        <div class="timer-num" id="timerNum">25:00</div>
+        <div class="grid-3" style="margin-bottom:10px;">
+          <button class="btn btn-soft" onclick="setMode(25,'Pomodoro')">25 dk</button>
+          <button class="btn btn-soft" onclick="setMode(40,'Dershane')">40 dk</button>
+          <button class="btn btn-soft" onclick="setMode(50,'Derin Odak')">50 dk</button>
+        </div>
+        <div class="grid-3" style="margin-bottom:10px;">
+          <button class="btn btn-soft" onclick="setMode(5,'Kısa Mola')">5 dk Mola</button>
+          <button class="btn btn-soft" onclick="setMode(10,'Teneffüs')">10 dk Mola</button>
+          <button class="btn btn-soft" onclick="setMode(15,'Uzun Mola')">15 dk Mola</button>
+        </div>
+        <div class="grid-2">
+          <button class="btn btn-primary" id="tBtn" onclick="toggleTimer()">Başlat</button>
+          <button class="btn btn-soft" onclick="resetTimer()">Sıfırla</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🌙 Uyku Düzenleyici</span></div>
+        <p class="muted" style="margin-top:0;">Sabah dinç uyanmak istediğin saati seç, ideal yatış saatlerini hesaplayayım:</p>
+        <input type="time" id="wakeTime" value="07:30" />
+        <button class="btn btn-primary" onclick="calcSleep()">Uyku Saatlerini Hesapla</button>
+        <div id="sleepOut" class="muted" style="margin-top:10px;line-height:1.7;color:var(--text);"></div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchView('today', this)"><span class="ico">💜</span>Bugün</button>
+    <button class="nav-btn" onclick="switchView('study', this)"><span class="ico">📊</span>Soru & Net</button>
+    <button class="nav-btn" onclick="switchView('archive', this)"><span class="ico">📸</span>Arşiv</button>
+    <button class="nav-btn" onclick="switchView('focus', this)"><span class="ico">⏱</span>Odak</button>
+  </nav>
+
+  <script>
+    const teachers = {
+      "Biyoloji": "Pervin Hoca", "Mat 2": "Burak Hoca", "Mat 1": "Yüksel Hoca",
+      "Türkçe": "Başar Hoca", "Kimya": "Yusuf Hoca", "Tarih": "Kubilay Hoca",
+      "Coğrafya": "Tuğba Hoca", "Fizik": "İbrahim Hoca", "Geometri": "Mustafa Hoca",
+      "Rehberlik": "Tuğçe Hoca"
+    };
+
+    const slots = ["09:00-09:40","09:50-10:30","10:40-11:20","11:30-12:10","12:20-13:00","13:40-14:20","14:30-15:10"];
+    const schedule = {
+      "Pzt": [],
+      "Sal": ["Fizik","Fizik","Tarih","Mat 2","Mat 2","Biyoloji","Biyoloji"],
+      "Çar": ["Fizik","Fizik","Biyoloji","Biyoloji","Mat 1","Mat 1"],
+      "Per": ["Kimya","Kimya","Mat 2","Mat 2","Coğrafya","Türkçe","Mat 1"],
+      "Cum": ["Geometri","Geometri","Türkçe","Türkçe","Kimya","Kimya"],
+      "Cmt": [], "Paz": []
+    };
+
+    const quotes = [
+      "“Başarı, her gün tekrarlanan küçük çabaların toplamıdır.”",
+      "“Bugün zor gelen soru, yarın sınavda en hızlı çözeceğin soru olacak.”",
+      "“Kendine inan Melike, disiplin motivasyondan her zaman daha güçlüdür.”",
+      "“Bir yanlış soru öğrenildiğinde, sınavda +1.25 net demektir.”"
+    ];
+
+    const state = JSON.parse(localStorage.getItem("melike_yks_v1") || "null") || {
+      para: 0, prob: 0, water: 0,
+      exams: [{ id: 1, name: "Ünite Sınavı (Kurs)", date: "" }, { id: 2, name: "345 TYT Denemesi", date: "" }],
+      logs: [],
+      asks: [],
+      photos: [],
+      homeworks: [],
+      books: []
+    };
+
+    const dayKeys = ["Paz","Pzt","Sal","Çar","Per","Cum","Cmt"];
+    let selectedDay = dayKeys[new Date().getDay()];
+
+    function save() { localStorage.setItem("melike_yks_v1", JSON.stringify(state)); renderAll(); }
+
+    document.getElementById("todayStr").textContent = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "short" });
+    document.getElementById("dailyQuote").textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    // Hedefler
+    function addGoal(k, n) { state[k] = Math.min(k === "para" ? 30 : 20, state[k] + n); save(); }
+    function resetDaily() { state.para = 0; state.prob = 0; save(); }
+
+    // Su
+    function toggleWater(i) { state.water = state.water === i ? i - 1 : i; save(); }
+
+    // Denemeler
+    function addExam() {
+      const name = document.getElementById("exName").value.trim();
+      const date = document.getElementById("exDate").value;
+      if (!name) return;
+      state.exams.unshift({ id: Date.now(), name, date });
+      document.getElementById("exName").value = "";
+      save();
+    }
+    function delExam(id) { state.exams = state.exams.filter(x => x.id !== id); save(); }
+
+    // Soru & Net + Otomatik Hocaya Sor
+    function addStudyLog() {
+      const type = document.getElementById("stType").value;
+      const subj = document.getElementById("stSubj").value;
+      const topic = document.getElementById("stTopic").value.trim() || "Genel";
+      const r = Number(document.getElementById("stRight").value) || 0;
+      const w = Number(document.getElementById("stWrong").value) || 0;
+      const m = Number(document.getElementById("stMin").value) || 0;
+      if (r + w === 0) return;
+      const net = (r - w * 0.25).toFixed(2);
+      state.logs.unshift({ id: Date.now(), type, subj, topic, r, w, m, net });
+      if (w > 0) {
+        state.asks.unshift({
+          id: Date.now() + 1,
+          text: `${subj} (${topic}) - ${w} yanlışın var → ${teachers[subj]}'ya sor!`,
+          done: false
+        });
+      }
+      document.getElementById("stTopic").value = "";
+      document.getElementById("stRight").value = "";
+      document.getElementById("stWrong").value = "";
+      document.getElementById("stMin").value = "";
+      save();
+    }
+    function toggleAsk(id) { state.asks = state.asks.map(x => x.id === id ? { ...x, done: !x.done } : x); save(); }
+    function delAsk(id) { state.asks = state.asks.filter(x => x.id !== id); save(); }
+
+    // Fotoğraf Arşivi (Küçülterek kaydeder)
+    function addQuestionPhoto() {
+      const subj = document.getElementById("qSubj").value;
+      const kind = document.getElementById("qKind").value;
+      const note = document.getElementById("qNote").value.trim();
+      const file = document.getElementById("qPhoto").files[0];
+      const pushItem = (img) => {
+        state.photos.unshift({ id: Date.now(), subj, kind, note, img, teacher: teachers[subj] });
+        document.getElementById("qNote").value = "";
+        document.getElementById("qPhoto").value = "";
+        save();
+      };
+      if (!file) { if (note) pushItem(null); return; }
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const c = document.createElement("canvas");
+          const scale = Math.min(1, 600 / img.width);
+          c.width = img.width * scale; c.height = img.height * scale;
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          pushItem(c.toDataURL("image/jpeg", 0.65));
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+    function delPhoto(id) { state.photos = state.photos.filter(x => x.id !== id); save(); }
+
+    // Ödev & Kaynaklar
+    function addSimple(key, inputId) {
+      const v = document.getElementById(inputId).value.trim();
+      if (!v) return;
+      state[key].unshift({ id: Date.now(), text: v, done: false });
+      document.getElementById(inputId).value = "";
+      save();
+    }
+    function toggleSimple(key, id) { state[key] = state[key].map(x => x.id === id ? { ...x, done: !x.done } : x); save(); }
+    function delSimple(key, id) { state[key] = state[key].filter(x => x.id !== id); save(); }
+
+    // Sayaç
+    let tSec = 25 * 60, tInt = null, curMin = 25;
+    function showT() {
+      document.getElementById("timerNum").textContent = `${String(Math.floor(tSec/60)).padStart(2,"0")}:${String(tSec%60).padStart(2,"0")}`;
+    }
+    function setMode(m, lbl) {
+      clearInterval(tInt); tInt = null; curMin = m; tSec = m * 60;
+      document.getElementById("modeBadge").textContent = lbl;
+      document.getElementById("tBtn").textContent = "Başlat"; showT();
+    }
+    function toggleTimer() {
+      if (tInt) { clearInterval(tInt); tInt = null; document.getElementById("tBtn").textContent = "Devam Et"; }
+      else {
+        document.getElementById("tBtn").textContent = "Duraklat";
+        tInt = setInterval(() => {
+          if (tSec > 0) { tSec--; showT(); }
+          else { clearInterval(tInt); tInt = null; alert("🎉 Süre doldu Melike, harika gidiyorsun!"); }
+        }, 1000);
+      }
+    }
+    function resetTimer() { setMode(curMin, document.getElementById("modeBadge").textContent); }
+
+    // Uyku
+    function calcSleep() {
+      const [h, m] = document.getElementById("wakeTime").value.split(":").map(Number);
+      const w = h * 60 + m;
+      document.getElementById("sleepOut").innerHTML = "İdeal yatış saatlerin:<br>" + [6,5,4].map(c => {
+        const t = (w - c*90 - 15 + 1440) % 1440;
+        return `🌙 <b>${String(Math.floor(t/60)).padStart(2,"0")}:${String(t%60).padStart(2,"0")}</b> (${c*1.5} saat uyku)`;
+      }).join("<br>");
+    }
+
+    function switchView(name, btn) {
+      document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+      document.getElementById("view-" + name).classList.add("active");
+      document.querySelectorAll(".nav-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    }
+
+    function renderAll() {
+      // Hedefler
+      document.getElementById("paraText").textContent = `${state.para} / 30`;
+      document.getElementById("paraBar").style.width = `${(state.para/30)*100}%`;
+      document.getElementById("probText").textContent = `${state.prob} / 20`;
+      document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
+
+      // Program
+      const order = ["Pzt","Sal","Çar","Per","Cum","Cmt","Paz"];
+      document.getElementById("dayTabs").innerHTML = order.map(d =>
+        `<button class="d-tab ${selectedDay===d?"active":""}" onclick="selectedDay='${d}';renderAll()">${d}</button>`
+      ).join("");
+      const list = schedule[selectedDay];
+      document.getElementById("scheduleList").innerHTML = list.length ? list.map((sub, i) => `
+        ${i === 5 ? '<div class="muted" style="text-align:center;margin:6px 0;font-weight:700;">🍽 13:00 - 13:40 Öğle Arası</div>' : ""}
+        <div class="lesson-row">
+          <div class="l-time">${slots[i]}</div>
+          <div class="l-name">${sub}</div>
+          <div class="l-teacher">${teachers[sub]}</div>
+        </div>
+      `).join("") : `<div class="muted">${selectedDay==="Pzt" ? "Bugün kurs yok! (Deneme/Ünite sınavı olabilir veya kişisel tekrar günü 💜)" : "Hafta sonu kurs yok — TYT/AYT Deneme & Dinlenme günü ✨"}</div>`;
+
+      // Denemeler
+      document.getElementById("examList").innerHTML = state.exams.length ? state.exams.map(x => `
+        <div class="list-row">
+          <span><b>${x.name}</b> ${x.date ? `<span class="muted">(${x.date})</span>` : ""}</span>
+          <button class="del" onclick="delExam(${x.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Henüz deneme eklenmedi.</div>';
+
+      // Su
+      document.getElementById("waterText").textContent = `${state.water} / 8 bardak`;
+      document.getElementById("waterRow").innerHTML = Array.from({length:8}, (_,i) =>
+        `<div class="cup ${i<state.water?"filled":""}" onclick="toggleWater(${i+1})">💧</div>`
+      ).join("");
+
+      // Hocaya Sor
+      const pendAsk = state.asks.filter(x => !x.done).length;
+      document.getElementById("askCount").textContent = `${pendAsk} bekleyen`;
+      document.getElementById("askList").innerHTML = state.asks.length ? state.asks.map(x => `
+        <div class="list-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+            <div class="check ${x.done?"done":""}" onclick="toggleAsk(${x.id})">${x.done?"✓":""}</div>
+            <span style="${x.done?"text-decoration:line-through;color:var(--muted)":""}">${x.text}</span>
+          </div>
+          <button class="del" onclick="delAsk(${x.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Harika! Hocaya sorulacak bekleyen yanlışın yok.</div>';
+
+      // Grafik & Loglar
+      const recent = state.logs.slice(0, 6).reverse();
+      const maxQ = Math.max(10, ...recent.map(x => x.r + x.w));
+      document.getElementById("studyChart").innerHTML = recent.length ? recent.map(x => {
+        const tot = x.r + x.w;
+        const h = Math.max(12, Math.round((tot / maxQ) * 75));
+        return `<div class="chart-col"><div class="chart-val">${tot}</div><div class="chart-bar" style="height:${h}px"></div><div class="chart-lbl">${x.subj.slice(0,5)}</div></div>`;
+      }).join("") : '<div class="muted" style="margin:auto;">Soru girdikçe grafiğin burada oluşacak.</div>';
+
+      document.getElementById("studyList").innerHTML = state.logs.slice(0,8).map(x => `
+        <div class="list-row">
+          <div><b>${x.type} ${x.subj}</b> • ${x.topic}<br><span class="muted">${x.r}D ${x.w}Y • ${x.m} dk</span></div>
+          <span class="badge">${x.net} Net</span>
+        </div>
+      `).join("");
+
+      // Fotoğraflar
+      document.getElementById("photoList").innerHTML = state.photos.length ? state.photos.map(x => `
+        <div style="padding:10px 0;border-bottom:1px solid #f3e8ff;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span><span class="badge">${x.subj}</span> <b>${x.kind}</b> <span class="muted">(${x.teacher})</span></span>
+            <button class="del" onclick="delPhoto(${x.id})">×</button>
+          </div>
+          ${x.note ? `<div class="muted" style="margin-top:4px;">${x.note}</div>` : ""}
+          ${x.img ? `<img class="q-photo" src="${x.img}" />` : ""}
+        </div>
+      `).join("") : '<div class="muted">Henüz kaydedilmiş soru yok.</div>';
+
+      // Ödev & Kaynaklar
+      ["homeworks","books"].forEach(k => {
+        document.getElementById("list-" + k).innerHTML = state[k].length ? state[k].map(x => `
+          <div class="list-row">
+            <div style="display:flex;align-items:center;gap:8px;flex:1;">
+              <div class="check ${x.done?"done":""}" onclick="toggleSimple('${k}',${x.id})">${x.done?"✓":""}</div>
+              <span style="${x.done?"text-decoration:line-through;color:var(--muted)":""}">${x.text}</span>
+            </div>
+            <button class="del" onclick="delSimple('${k}',${x.id})">×</button>
+          </div>
+        `).join("") : '<div class="muted">Henüz kayıt yok.</div>';
+      });
+    }
+
+    renderAll();
+  </script>
+</body>
+</html>
