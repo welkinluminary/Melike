@@ -10,7 +10,7 @@
   <style>
     :root {
       --bg: #f8f5ff;
-      --glass: rgba(255, 255, 255, 0.8);
+      --glass: rgba(255, 255, 255, 0.82);
       --glass-strong: rgba(255, 255, 255, 0.94);
       --border: rgba(233, 213, 255, 0.9);
       --shadow: 0 8px 26px rgba(139, 92, 246, 0.09);
@@ -35,35 +35,87 @@
       padding-bottom: calc(94px + env(safe-area-inset-bottom));
     }
 
+    /* Yüzen Aurora Arka Plan */
     .aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-    .blob { position: absolute; border-radius: 50%; filter: blur(75px); opacity: 0.55; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(75px); opacity: 0.55; animation: floatBlob 10s ease-in-out infinite alternate; }
     .b1 { width: 300px; height: 300px; background: #e9d5ff; top: -70px; left: -60px; }
-    .b2 { width: 280px; height: 280px; background: #ddd6fe; top: 220px; right: -70px; }
-    .b3 { width: 250px; height: 250px; background: #fce7f3; bottom: 50px; left: 10%; }
+    .b2 { width: 280px; height: 280px; background: #ddd6fe; top: 220px; right: -70px; animation-delay: -3s; }
+    .b3 { width: 250px; height: 250px; background: #fce7f3; bottom: 50px; left: 10%; animation-delay: -6s; }
+    @keyframes floatBlob {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(18px, -22px) scale(1.08); }
+    }
+
+    /* Giriş Ekranı (Splash) */
+    #splash {
+      position: fixed; inset: 0; z-index: 100;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: 32px 24px; text-align: center;
+      background: linear-gradient(160deg, rgba(248,245,255,0.96), rgba(243,232,255,0.94));
+      backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      transition: opacity 0.45s ease, transform 0.45s ease;
+      overflow: hidden;
+    }
+    #splash.hide { opacity: 0; transform: scale(1.05); pointer-events: none; }
+    .float-icon {
+      position: absolute; font-size: 26px; opacity: 0.28; pointer-events: none;
+      animation: floatIcon 6s ease-in-out infinite alternate;
+    }
+    .fi-1 { top: 12%; left: 14%; animation-delay: 0s; }
+    .fi-2 { top: 18%; right: 16%; animation-delay: -2s; }
+    .fi-3 { bottom: 20%; left: 18%; animation-delay: -4s; }
+    .fi-4 { bottom: 16%; right: 14%; animation-delay: -1s; }
+    @keyframes floatIcon {
+      from { transform: translateY(0px) rotate(-6deg); }
+      to { transform: translateY(-18px) rotate(8deg); }
+    }
+    .splash-card {
+      background: rgba(255,255,255,0.82); border: 1px solid var(--border);
+      border-radius: 28px; padding: 30px 22px; max-width: 360px; width: 100%;
+      box-shadow: 0 18px 45px rgba(139, 92, 246, 0.16);
+      animation: cardFloat 4s ease-in-out infinite alternate;
+    }
+    @keyframes cardFloat {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-6px); }
+    }
+    .splash-badge {
+      display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: 0.8px;
+      color: var(--accent); background: var(--accent-soft); padding: 6px 14px; border-radius: 99px; margin-bottom: 14px;
+    }
+    .splash-title { font-size: 24px; font-weight: 800; margin: 0 0 6px; color: var(--text); }
+    .splash-sub { font-size: 14px; font-weight: 600; color: var(--accent); margin: 0 0 18px; }
+    .splash-quote { font-size: 15px; line-height: 1.5; color: var(--text); font-style: italic; margin: 0 0 18px; }
+    .splash-sign { font-size: 13px; font-weight: 700; color: var(--muted); margin-bottom: 24px; }
+    .btn-start {
+      width: 100%; background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff;
+      border: none; padding: 15px; border-radius: 16px; font-size: 16px; font-weight: 800;
+      box-shadow: 0 10px 24px rgba(139, 92, 246, 0.32); cursor: pointer;
+    }
+    .btn-start:active { transform: scale(0.97); }
 
     .app { max-width: 520px; margin: 0 auto; padding: calc(14px + env(safe-area-inset-top)) 14px 20px; }
 
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; }
-    .brand { font-size: 22px; font-weight: 800; letter-spacing: -0.4px; }
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding: 0 4px; gap: 8px; }
+    .brand { font-size: 21px; font-weight: 800; letter-spacing: -0.4px; }
     .brand span { color: var(--accent); }
-    .pill-date { font-size: 12px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 6px 12px; border-radius: 99px; }
+    .header-right { display: flex; align-items: center; gap: 6px; }
+    .pill-date { font-size: 11px; font-weight: 700; color: var(--accent); background: var(--accent-soft); padding: 6px 10px; border-radius: 99px; }
+    .btn-exit {
+      border: 1px solid #fecdd3; background: #fff1f2; color: var(--rose);
+      font-size: 11px; font-weight: 800; padding: 6px 10px; border-radius: 99px; cursor: pointer;
+    }
 
     .card {
-      background: var(--glass);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 15px;
-      margin-bottom: 13px;
-      box-shadow: var(--shadow);
+      background: var(--glass); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 15px;
+      margin-bottom: 13px; box-shadow: var(--shadow);
     }
     .card-title {
       font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px;
       color: var(--muted); margin: 0 0 11px; display: flex; justify-content: space-between; align-items: center;
     }
 
-    /* Segmented Control */
     .seg-bar {
       display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
       background: var(--accent-soft); padding: 4px; border-radius: 14px; margin-bottom: 12px;
@@ -74,7 +126,6 @@
     }
     .seg-btn.active { background: #fff; color: var(--accent); box-shadow: 0 2px 8px rgba(139,92,246,0.15); }
 
-    /* Günlük Kaydırılabilir Şerit */
     .day-strip { display: flex; gap: 7px; overflow-x: auto; padding: 2px 2px 10px; scrollbar-width: none; }
     .day-strip::-webkit-scrollbar { display: none; }
     .day-chip {
@@ -86,18 +137,14 @@
     .day-chip.active { background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff; border-color: transparent; }
     .day-chip.active .dn { color: rgba(255,255,255,0.85); }
 
-    /* Aylık Takvim Grid */
     .cal-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-weight: 700; }
     .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
     .cal-dow { font-size: 11px; font-weight: 700; color: var(--muted); padding-bottom: 4px; }
-    .cal-cell {
-      padding: 8px 0; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; background: rgba(255,255,255,0.6);
-    }
+    .cal-cell { padding: 8px 0; border-radius: 11px; font-size: 13px; font-weight: 600; cursor: pointer; background: rgba(255,255,255,0.6); }
     .cal-cell.today { border: 2px solid var(--accent); color: var(--accent); }
     .cal-cell.selected { background: var(--accent); color: #fff; }
     .cal-cell.empty { background: transparent; cursor: default; }
 
-    /* Ders Satırları */
     .lesson-row {
       display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 13px;
       background: rgba(255,255,255,0.88); margin-bottom: 6px; border-left: 4px solid var(--accent-light);
@@ -106,17 +153,29 @@
     .l-name { font-size: 13px; font-weight: 700; flex: 1; }
     .l-teacher { font-size: 11px; color: var(--muted); background: var(--accent-soft); padding: 2px 8px; border-radius: 99px; font-weight: 600; }
 
-    /* Hedef Barları */
+    /* Verimlilik Yüz İfadeleri */
+    .mood-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .mood-btn {
+      border: 2px solid transparent; background: #fff; border-radius: 15px;
+      padding: 10px 4px; font-size: 24px; cursor: pointer; transition: 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .mood-btn span { font-size: 10px; font-weight: 700; color: var(--muted); }
+    .mood-btn.active { border-color: var(--accent); background: var(--accent-soft); transform: scale(1.06); }
+    .mood-msg {
+      margin-top: 10px; padding: 10px 12px; border-radius: 13px; background: var(--accent-soft);
+      color: var(--accent); font-size: 12px; font-weight: 700; text-align: center; display: none;
+    }
+
     .bar-bg { height: 9px; background: #ede9fe; border-radius: 99px; overflow: hidden; margin: 5px 0; }
     .bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), #c084fc); border-radius: 99px; transition: width 0.25s; }
     .mini-btn { border: none; background: var(--accent-soft); color: var(--accent); font-size: 11px; font-weight: 700; padding: 5px 9px; border-radius: 9px; cursor: pointer; }
 
-    /* Formlar */
-    input, select {
+    input, select, textarea {
       width: 100%; padding: 10px 11px; border-radius: 12px; border: 1px solid #e9d5ff;
       background: rgba(255,255,255,0.92); font-size: 13px; color: var(--text); font-family: inherit; margin-bottom: 8px; outline: none;
     }
-    input:focus, select:focus { border-color: var(--accent); }
+    input:focus, select:focus, textarea:focus { border-color: var(--accent); }
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
     .btn { width: 100%; border: none; border-radius: 13px; padding: 11px; font-size: 14px; font-weight: 700; cursor: pointer; }
@@ -124,34 +183,28 @@
     .btn-primary { background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff; }
     .btn-soft { background: var(--accent-soft); color: var(--accent); }
 
-    /* Deneme Tablosu */
-    .exam-row {
-      display: grid; grid-template-columns: 1.5fr 1fr 1fr 0.8fr; gap: 6px; align-items: center;
-      padding: 6px 0; border-bottom: 1px solid #f3e8ff; font-size: 13px;
-    }
+    .exam-row { display: grid; grid-template-columns: 1.5fr 1fr 1fr 0.8fr; gap: 6px; align-items: center; padding: 6px 0; border-bottom: 1px solid #f3e8ff; font-size: 13px; }
     .exam-row input { margin-bottom: 0; padding: 7px; text-align: center; }
     .exam-head { font-size: 11px; font-weight: 700; color: var(--muted); text-align: center; }
 
-    /* Liste & Rozetler */
     .list-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 0; border-bottom: 1px solid #f3e8ff; font-size: 13px; }
     .list-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .check {
+      width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--accent);
+      display: grid; place-items: center; cursor: pointer; flex-shrink: 0; color: #fff; font-size: 12px; font-weight: 700;
+    }
+    .check.done { background: var(--mint); border-color: var(--mint); }
     .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); }
     .badge-warn { background: #ffe4e6; color: var(--rose); }
     .badge-mint { background: #d1fae5; color: #059669; }
     .del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
     .muted { color: var(--muted); font-size: 12px; }
 
-    /* Timer */
     .timer-num {
       font-size: 54px; font-weight: 800; text-align: center; margin: 6px 0 10px;
       background: linear-gradient(135deg, var(--accent), #c084fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .phase-tag { text-align: center; font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
-
-    /* Su */
-    .water-row { display: flex; gap: 5px; }
-    .cup { flex: 1; height: 32px; border-radius: 9px; background: #f3e8ff; display: grid; place-items: center; cursor: pointer; font-size: 13px; }
-    .cup.filled { background: linear-gradient(135deg, #8b5cf6, #60a5fa); color: #fff; }
 
     .view { display: none; }
     .view.active { display: block; animation: fadeIn 0.22s ease; }
@@ -176,13 +229,32 @@
 <body>
   <div class="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
 
+  <!-- YÜZEN EFEKTLİ GİRİŞ EKRANI -->
+  <div id="splash">
+    <div class="float-icon fi-1">✨</div>
+    <div class="float-icon fi-2">💜</div>
+    <div class="float-icon fi-3">🏆</div>
+    <div class="float-icon fi-4">📚</div>
+    <div class="splash-card">
+      <div class="splash-badge">✨ MELİKE YKS ASİSTANI</div>
+      <h1 class="splash-title">Hoş Geldin Şampiyon! 🏆</h1>
+      <p class="splash-sub">İyi çalışmalar, başarılar...</p>
+      <p class="splash-quote" id="splashQuote"></p>
+      <div class="splash-sign">— Sevgili ablan Sema 💜</div>
+      <button class="btn-start" onclick="enterApp()">Başla ✨</button>
+    </div>
+  </div>
+
   <div class="app">
     <header>
       <div class="brand">Melike <span>YKS</span> 💜</div>
-      <div class="pill-date" id="todayStr"></div>
+      <div class="header-right">
+        <div class="pill-date" id="todayStr"></div>
+        <button class="btn-exit" onclick="exitApp()">Çıkış</button>
+      </div>
     </header>
 
-    <!-- 1. TAKVİM & PROGRAM -->
+    <!-- 1. TAKVİM & ANA EKRAN -->
     <section id="view-cal" class="view active">
       <div class="seg-bar">
         <button class="seg-btn active" onclick="setCalMode('daily', this)">Günlük</button>
@@ -194,7 +266,7 @@
       <div id="cal-daily">
         <div class="day-strip" id="dayStrip"></div>
 
-        <!-- Seçili Günün Programı (Sağa-sola kaydırmalı) -->
+        <!-- Seçili Günün Programı -->
         <div class="card" id="swipeArea">
           <div class="card-title">
             <span id="selectedDayTitle">Bugünün Programı</span>
@@ -218,10 +290,29 @@
           </div>
         </div>
 
-        <!-- Su Takibi -->
+        <!-- Kendine Görev / Soru Hedefi Ekle -->
         <div class="card">
-          <div class="card-title"><span>💧 Su Takibi</span><span class="muted" id="waterTxt">0 / 8</span></div>
-          <div class="water-row" id="waterRow"></div>
+          <div class="card-title"><span>✅ Bugünkü Görevlerim</span></div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="myTaskInput" placeholder="Örn: 30 soru Fizik çöz, Türev tekrar et..." style="margin-bottom:0;" />
+            <button class="btn btn-primary" style="width:auto;padding:0 16px;" onclick="addMyTask()">Ekle</button>
+          </div>
+          <div id="myTaskList" style="margin-top:10px;"></div>
+        </div>
+
+        <!-- Bugün Ne Kadar Verimliydi? -->
+        <div class="card">
+          <div class="card-title"><span>🌟 Bugün Ne Kadar Verimliydi?</span></div>
+          <div class="mood-row" id="moodRow"></div>
+          <div class="mood-msg" id="moodMsg"></div>
+        </div>
+
+        <!-- Hızlı Notlarım -->
+        <div class="card">
+          <div class="card-title"><span>📝 Notlarım</span></div>
+          <textarea id="noteInput" rows="2" placeholder="Kendine bir not, hatırlatma veya formül yaz..."></textarea>
+          <button class="btn btn-soft" onclick="addNote()">+ Notu Kaydet</button>
+          <div id="noteList" style="margin-top:10px;"></div>
         </div>
 
         <!-- En Altta: Yarın Ne Var? -->
@@ -268,7 +359,6 @@
         </div>
         <div id="examInputs"></div>
 
-        <!-- Yanlış / Boş Konu Seçimi -->
         <div style="margin-top:12px;padding-top:10px;border-top:1px dashed #d8b4fe;">
           <div class="card-title" style="margin-bottom:6px;"><span>❌ Yanlış / Boş Bırakılan Konuyu İşaretle</span></div>
           <div class="grid-2">
@@ -281,13 +371,11 @@
         <button class="btn btn-primary" onclick="saveExam()">Denemeyi Kaydet</button>
       </div>
 
-      <!-- Hocaya Sor & Eksik Konular -->
       <div class="card">
         <div class="card-title"><span>🙋‍♀️ Eksik Konular & Hocaya Sorulacaklar</span><span class="badge badge-warn" id="weakCount">0</span></div>
         <div id="weakList"></div>
       </div>
 
-      <!-- Kayıtlı Denemeler -->
       <div class="card">
         <div class="card-title"><span>📈 Deneme Geçmişim</span></div>
         <div id="examHistory"></div>
@@ -296,7 +384,6 @@
 
     <!-- 3. SORU KAYNAKLARI, ÖDEVLER & ARŞİV -->
     <section id="view-books" class="view">
-      <!-- Soru Kaynakları -->
       <div class="card">
         <div class="card-title"><span>📚 Soru Kaynaklarım</span></div>
         <input type="text" id="bkName" placeholder="Kaynak adı (Örn: 345, Bilgi Sarmal...)" />
@@ -314,7 +401,6 @@
         <div id="booksList" style="margin-top:12px;"></div>
       </div>
 
-      <!-- Haftalık Ödevler (Yüzdeli & Soru İlerlemeli) -->
       <div class="card">
         <div class="card-title"><span>📌 Haftalık Ödevler (İlerleme Takibi)</span></div>
         <div class="grid-2">
@@ -325,7 +411,6 @@
         <div id="hwList" style="margin-top:12px;"></div>
       </div>
 
-      <!-- Yanlış / Güzel Soru Fotoğraf Arşivi -->
       <div class="card">
         <div class="card-title"><span>📸 Yanlış & Güzel Soru Fotoğrafları</span></div>
         <div class="grid-2">
@@ -341,7 +426,7 @@
     <!-- 4. ODAK TEKNİKLERİ & UYKU -->
     <section id="view-focus" class="view">
       <div class="card">
-        <div class="card-title"><span>⏱ Odaklanma Teknikleri</span><span class="badge" id="techName">Pomodoro (25/10)</span></div>
+        <div class="card-title"><span>⏱ Odaklanma Teknikleri</span><span class="badge" id="techName">25 dk / 10 dk</span></div>
         <div class="timer-num" id="timerDisplay">25:00</div>
         <div class="phase-tag" id="phaseTag">📖 Çalışma Zamanı</div>
         <select id="techSelect" onchange="changeTech()">
@@ -374,6 +459,21 @@
   </nav>
 
   <script>
+    const QUOTES = [
+      "“Başarı, her gün tekrarlanan küçük çabaların toplamıdır.”",
+      "“Bugün zor gelen soru, yarın sınavda en hızlı çözeceğin soru olacak.”",
+      "“Kendine inan Melike, disiplin motivasyondan her zaman daha güçlüdür.”",
+      "“Hayallerine giden yol, bugün masaya oturmanla başlıyor.”"
+    ];
+
+    const MOODS = [
+      { id: 1, ico: "😫", lbl: "Zordu", msg: "Olur böyle günler şampiyon, dinlen ve yarın taze başla 💜" },
+      { id: 2, ico: "😕", lbl: "Dağınık", msg: "Yine de çabaladın! Yarın daha odaklı olacaksın ✨" },
+      { id: 3, ico: "😐", lbl: "Orta", msg: "Fena değil! Küçük bir tekrarla günü güzel kapatabilirsin 📖" },
+      { id: 4, ico: "🙂", lbl: "Güzel", msg: "Harika gidiyorsun Melike, emeğine sağlık! 👏" },
+      { id: 5, ico: "🤩", lbl: "Efsane", msg: "İşte şampiyon enerjisi! Bugünü fethettin 🏆🔥" }
+    ];
+
     const TEACHERS = {
       "Biyoloji": "Permin Hoca", "Mat 2": "Burak Hoca", "Mat 1": "Yüksel Hoca", "Matematik": "Yüksel / Burak Hoca",
       "Türkçe": "Başar Hoca", "Kimya": "Yusuf Hoca", "Tarih": "Kubilay Hoca",
@@ -383,12 +483,12 @@
 
     const SLOTS = ["09:00-09:40","09:50-10:30","10:40-11:20","11:30-12:10","12:20-13:00","13:40-14:20","14:30-15:10"];
     const SCHEDULE = {
-      1: [], // Pzt
-      2: ["Fizik","Fizik","Tarih","Mat 2","Mat 2","Biyoloji","Biyoloji"], // Sal
-      3: ["Fizik","Fizik","Biyoloji","Biyoloji","Mat 1","Mat 1"], // Çar
-      4: ["Kimya","Kimya","Mat 2","Mat 2","Coğrafya","Türkçe","Mat 1"], // Per
-      5: ["Geometri","Geometri","Türkçe","Türkçe","Kimya","Kimya"], // Cum
-      6: [], 0: [] // Cmt, Paz
+      1: [],
+      2: ["Fizik","Fizik","Tarih","Mat 2","Mat 2","Biyoloji","Biyoloji"],
+      3: ["Fizik","Fizik","Biyoloji","Biyoloji","Mat 1","Mat 1"],
+      4: ["Kimya","Kimya","Mat 2","Mat 2","Coğrafya","Türkçe","Mat 1"],
+      5: ["Geometri","Geometri","Türkçe","Türkçe","Kimya","Kimya"],
+      6: [], 0: []
     };
 
     const EXAM_CFG = {
@@ -423,46 +523,44 @@
       }
     };
 
-    const state = JSON.parse(localStorage.getItem("melike_yks_v2") || "null") || {
-      para: 0, prob: 0, water: 0,
-      exams: [],
-      weaks: [],
-      books: [],
-      homeworks: [],
-      photos: []
+    const state = JSON.parse(localStorage.getItem("melike_yks_v3") || "null") || {
+      para: 0, prob: 0, mood: null,
+      myTasks: [], notes: [],
+      exams: [], weaks: [], books: [], homeworks: [], photos: []
     };
 
     let selectedDate = new Date();
     let calMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
     let curExamType = "TYT";
 
-    function save() { localStorage.setItem("melike_yks_v2", JSON.stringify(state)); renderAll(); }
+    function save() { localStorage.setItem("melike_yks_v3", JSON.stringify(state)); renderAll(); }
+
+    // Giriş / Çıkış
+    function setRandomQuote() {
+      document.getElementById("splashQuote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    }
+    setRandomQuote();
+    function enterApp() { document.getElementById("splash").classList.add("hide"); }
+    function exitApp() {
+      setRandomQuote();
+      document.getElementById("splash").classList.remove("hide");
+    }
 
     document.getElementById("todayStr").textContent = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", weekday: "short" });
 
-    // --- TAKVİM & PROGRAM ---
+    // --- TAKVİM ---
     function setCalMode(mode, btn) {
       ["daily","weekly","monthly"].forEach(m => document.getElementById("cal-" + m).style.display = m === mode ? "block" : "none");
       btn.parentElement.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       renderCalendar();
     }
-
-    function selectDayOffset(d) {
-      selectedDate = new Date(d);
-      renderCalendar();
-    }
-
-    function changeMonth(delta) {
-      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
-      renderCalendar();
-    }
+    function selectDayOffset(d) { selectedDate = new Date(d); renderCalendar(); }
+    function changeMonth(delta) { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1); renderCalendar(); }
 
     function renderLessonsHTML(dow) {
       const list = SCHEDULE[dow] || [];
-      if (!list.length) {
-        return `<div class="muted">${dow === 1 ? "Bugün kurs yok! (Deneme / Ünite Sınavı veya kişisel tekrar günü 💜)" : "Hafta sonu kurs yok — TYT/AYT Deneme & Dinlenme ✨"}</div>`;
-      }
+      if (!list.length) return `<div class="muted">${dow === 1 ? "Bugün kurs yok! (Deneme / Ünite Sınavı veya kişisel tekrar günü 💜)" : "Hafta sonu kurs yok — TYT/AYT Deneme & Dinlenme ✨"}</div>`;
       return list.map((sub, i) => `
         ${i === 5 ? '<div class="muted" style="text-align:center;margin:5px 0;font-weight:700;">🍽 13:00 - 13:40 Öğle Arası</div>' : ""}
         <div class="lesson-row">
@@ -474,7 +572,6 @@
     }
 
     function renderCalendar() {
-      // Günlük Şerit
       const strip = document.getElementById("dayStrip");
       const chips = [];
       for (let i = -3; i <= 7; i++) {
@@ -486,27 +583,20 @@
         </div>`);
       }
       strip.innerHTML = chips.join("");
-
       document.getElementById("selectedDayTitle").textContent = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
       document.getElementById("dailySchedule").innerHTML = renderLessonsHTML(selectedDate.getDay());
 
-      // Yarın Ne Var?
       const tom = new Date(selectedDate); tom.setDate(selectedDate.getDate() + 1);
       document.getElementById("tomorrowName").textContent = tom.toLocaleDateString("tr-TR", { weekday: "long" });
       document.getElementById("tomorrowPreview").innerHTML = renderLessonsHTML(tom.getDay());
 
-      // Haftalık Görünüm
       const wDays = [[1,"Pazartesi"],[2,"Salı"],[3,"Çarşamba"],[4,"Perşembe"],[5,"Cuma"],[6,"Cumartesi"],[0,"Pazar"]];
       document.getElementById("weeklyOverview").innerHTML = wDays.map(([dow, name]) => `
-        <div style="margin-bottom:12px;">
-          <div style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:5px;">${name}</div>
-          ${renderLessonsHTML(dow)}
-        </div>
+        <div style="margin-bottom:12px;"><div style="font-size:13px;font-weight:800;color:var(--accent);margin-bottom:5px;">${name}</div>${renderLessonsHTML(dow)}</div>
       `).join("");
 
-      // Aylık Görünüm
       document.getElementById("monthLabel").textContent = calMonth.toLocaleDateString("tr-TR", { month: "long", year: "numeric" });
-      const firstDow = (calMonth.getDay() + 6) % 7; // Pzt=0
+      const firstDow = (calMonth.getDay() + 6) % 7;
       const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
       const todayStr = new Date().toDateString();
       let html = ["Pt","Sa","Ça","Pe","Cu","Ct","Pz"].map(x => `<div class="cal-dow">${x}</div>`).join("");
@@ -524,24 +614,39 @@
       setCalMode("daily", document.querySelector("#view-cal .seg-btn"));
     }
 
-    // Sağa-Sola Kaydırma (Touch Swipe)
     let touchX = 0;
     const sw = document.getElementById("swipeArea");
     sw.addEventListener("touchstart", e => { touchX = e.changedTouches[0].screenX; }, { passive: true });
     sw.addEventListener("touchend", e => {
       const diff = e.changedTouches[0].screenX - touchX;
-      if (Math.abs(diff) > 45) {
-        selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1));
-        renderCalendar();
-      }
+      if (Math.abs(diff) > 45) { selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1)); renderCalendar(); }
     }, { passive: true });
 
-    // Hedefler & Su
+    // Hedefler, Görevler, Verimlilik, Notlar
     function addGoal(k, n) { state[k] = Math.min(k === "para" ? 30 : 20, state[k] + n); save(); }
     function resetDaily() { state.para = 0; state.prob = 0; save(); }
-    function toggleWater(i) { state.water = state.water === i ? i - 1 : i; save(); }
+    function setMood(id) { state.mood = id; save(); }
 
-    // --- DENEME & NET ---
+    function addMyTask() {
+      const v = document.getElementById("myTaskInput").value.trim();
+      if (!v) return;
+      state.myTasks.unshift({ id: Date.now(), text: v, done: false });
+      document.getElementById("myTaskInput").value = "";
+      save();
+    }
+    function toggleMyTask(id) { state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x); save(); }
+    function delMyTask(id) { state.myTasks = state.myTasks.filter(x => x.id !== id); save(); }
+
+    function addNote() {
+      const v = document.getElementById("noteInput").value.trim();
+      if (!v) return;
+      state.notes.unshift({ id: Date.now(), text: v, date: new Date().toLocaleDateString("tr-TR") });
+      document.getElementById("noteInput").value = "";
+      save();
+    }
+    function delNote(id) { state.notes = state.notes.filter(x => x.id !== id); save(); }
+
+    // --- DENEME ---
     function setExamType(type, btn) {
       curExamType = type;
       btn.parentElement.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
@@ -549,7 +654,6 @@
       document.getElementById("examFormTitle").textContent = `${type} Deneme Net Girişi`;
       renderExamForm();
     }
-
     function renderExamForm() {
       const cfg = EXAM_CFG[curExamType];
       document.getElementById("examInputs").innerHTML = cfg.map(s => `
@@ -561,16 +665,13 @@
         </div>
       `).join("");
       document.getElementById("errSubj").innerHTML = cfg.map(s => `<option value="${s.k}">${s.k}</option>`).join("");
-      populateErrTopics();
-      calcLiveExam();
+      populateErrTopics(); calcLiveExam();
     }
-
     function populateErrTopics() {
       const subj = document.getElementById("errSubj").value;
       const list = (TOPICS[curExamType] && TOPICS[curExamType][subj]) || ["Genel"];
       document.getElementById("errTopic").innerHTML = list.map(t => `<option value="${t}">${t}</option>`).join("");
     }
-
     function calcLiveExam() {
       let totNet = 0;
       EXAM_CFG[curExamType].forEach(s => {
@@ -584,37 +685,27 @@
       document.getElementById("liveNetBadge").textContent = `Toplam: ${totNet.toFixed(2)} Net`;
       return totNet;
     }
-
     function addWeakTopic() {
       const subj = document.getElementById("errSubj").value;
       const topic = document.getElementById("errTopic").value;
       state.weaks.unshift({ id: Date.now(), text: `[${curExamType} ${subj}] ${topic} → ${TEACHERS[subj] || "Hocaya"} sor!`, done: false });
       save();
     }
-
     function saveExam() {
       const title = document.getElementById("examTitle").value.trim() || `${curExamType} Denemesi`;
       const net = calcLiveExam().toFixed(2);
       state.exams.unshift({ id: Date.now(), type: curExamType, title, net, date: new Date().toLocaleDateString("tr-TR") });
       document.getElementById("examTitle").value = "";
-      renderExamForm();
-      save();
+      renderExamForm(); save();
     }
 
-    // --- SORU KAYNAKLARI ---
+    // --- KAYNAKLAR, ÖDEVLER, FOTO ---
     function addBook() {
       const name = document.getElementById("bkName").value.trim();
       if (!name) return;
-      state.books.unshift({
-        id: Date.now(), name,
-        exam: document.getElementById("bkExam").value,
-        subj: document.getElementById("bkSubj").value,
-        logs: []
-      });
-      document.getElementById("bkName").value = "";
-      save();
+      state.books.unshift({ id: Date.now(), name, exam: document.getElementById("bkExam").value, subj: document.getElementById("bkSubj").value, logs: [] });
+      document.getElementById("bkName").value = ""; save();
     }
-
     function logBookQuestions(bookId) {
       const topic = document.getElementById("bt_" + bookId).value;
       const d = Number(document.getElementById("bd_" + bookId).value) || 0;
@@ -623,49 +714,33 @@
       if (d + y + b === 0) return;
       const bk = state.books.find(x => x.id === bookId);
       bk.logs.unshift({ topic, d, y, b, date: new Date().toLocaleDateString("tr-TR") });
-      if (y > 0 || b > 0) {
-        state.weaks.unshift({ id: Date.now(), text: `[${bk.exam} ${bk.subj}] ${topic} (${y}Y ${b}B) → ${TEACHERS[bk.subj] || "Hocaya"} sor!`, done: false });
-      }
+      if (y > 0 || b > 0) state.weaks.unshift({ id: Date.now(), text: `[${bk.exam} ${bk.subj}] ${topic} (${y}Y ${b}B) → ${TEACHERS[bk.subj] || "Hocaya"} sor!`, done: false });
       save();
     }
-
     function delBook(id) { state.books = state.books.filter(x => x.id !== id); save(); }
 
-    // --- ÖDEVLER (YÜZDELİ) ---
     function addHomework() {
       const name = document.getElementById("hwName").value.trim();
       const target = Number(document.getElementById("hwTarget").value) || 100;
       if (!name) return;
       state.homeworks.unshift({ id: Date.now(), name, target, doneCount: 0 });
-      document.getElementById("hwName").value = "";
-      document.getElementById("hwTarget").value = "";
-      save();
+      document.getElementById("hwName").value = ""; document.getElementById("hwTarget").value = ""; save();
     }
-
-    function updateHw(id, val) {
-      const hw = state.homeworks.find(x => x.id === id);
-      if (hw) { hw.doneCount = Math.min(hw.target, Math.max(0, Number(val))); save(); }
-    }
+    function updateHw(id, val) { const hw = state.homeworks.find(x => x.id === id); if (hw) { hw.doneCount = Math.min(hw.target, Math.max(0, Number(val))); save(); } }
     function delHw(id) { state.homeworks = state.homeworks.filter(x => x.id !== id); save(); }
 
-    // --- FOTOĞRAF ARŞİVİ ---
     function addPhoto() {
       const subj = document.getElementById("phSubj").value;
       const note = document.getElementById("phNote").value.trim();
       const file = document.getElementById("phFile").files[0];
       if (!file && !note) return;
-      const pushP = (img) => {
-        state.photos.unshift({ id: Date.now(), subj, note, img });
-        document.getElementById("phNote").value = ""; document.getElementById("phFile").value = "";
-        save();
-      };
+      const pushP = (img) => { state.photos.unshift({ id: Date.now(), subj, note, img }); document.getElementById("phNote").value = ""; document.getElementById("phFile").value = ""; save(); };
       if (!file) { pushP(null); return; }
       const r = new FileReader();
       r.onload = e => {
         const img = new Image();
         img.onload = () => {
-          const c = document.createElement("canvas");
-          const sc = Math.min(1, 580 / img.width);
+          const c = document.createElement("canvas"); const sc = Math.min(1, 580 / img.width);
           c.width = img.width * sc; c.height = img.height * sc;
           c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
           pushP(c.toDataURL("image/jpeg", 0.65));
@@ -675,7 +750,7 @@
       r.readAsDataURL(file);
     }
 
-    // --- ODAK SAYACI (OTOMATİK ÇALIŞMA / MOLA DÖNGÜSÜ) ---
+    // --- ODAK & UYKU ---
     let workMin = 25, breakMin = 10, isBreak = false, tSec = 25 * 60, tInt = null;
     function changeTech() {
       const [w, b] = document.getElementById("techSelect").value.split("-").map(Number);
@@ -693,12 +768,7 @@
         document.getElementById("tBtn").textContent = "Duraklat";
         tInt = setInterval(() => {
           if (tSec > 0) { tSec--; showT(); }
-          else {
-            isBreak = !isBreak;
-            tSec = (isBreak ? breakMin : workMin) * 60;
-            showT();
-            alert(isBreak ? `🎉 ${workMin} dk bitti! Şimdi ${breakMin} dk mola zamanı.` : "✨ Mola bitti! Yeni çalışma turu başlıyor.");
-          }
+          else { isBreak = !isBreak; tSec = (isBreak ? breakMin : workMin) * 60; showT(); alert(isBreak ? `🎉 ${workMin} dk bitti! Şimdi ${breakMin} dk mola.` : "✨ Mola bitti! Yeni tur başlıyor."); }
         }, 1000);
       }
     }
@@ -727,10 +797,34 @@
       document.getElementById("probTxt").textContent = `${state.prob} / 20`;
       document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
 
-      document.getElementById("waterTxt").textContent = `${state.water} / 8 bardak`;
-      document.getElementById("waterRow").innerHTML = Array.from({length:8}, (_,i) =>
-        `<div class="cup ${i<state.water?"filled":""}" onclick="toggleWater(${i+1})">💧</div>`
-      ).join("");
+      // Görevlerim
+      document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map(t => `
+        <div class="list-row">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+            <div class="check ${t.done ? "done" : ""}" onclick="toggleMyTask(${t.id})">${t.done ? "✓" : ""}</div>
+            <span style="${t.done ? "text-decoration:line-through;color:var(--muted)" : ""}">${t.text}</span>
+          </div>
+          <button class="del" onclick="delMyTask(${t.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Bugün için kendine bir görev ekle!</div>';
+
+      // Verimlilik Yüz İfadeleri
+      document.getElementById("moodRow").innerHTML = MOODS.map(m => `
+        <button class="mood-btn ${state.mood === m.id ? "active" : ""}" onclick="setMood(${m.id})">
+          ${m.ico}<span>${m.lbl}</span>
+        </button>
+      `).join("");
+      const selMood = MOODS.find(m => m.id === state.mood);
+      const mBox = document.getElementById("moodMsg");
+      if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
+
+      // Notlarım
+      document.getElementById("noteList").innerHTML = state.notes.length ? state.notes.map(n => `
+        <div class="list-row">
+          <div>${n.text} <span class="muted">(${n.date})</span></div>
+          <button class="del" onclick="delNote(${n.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Henüz not eklemedin.</div>';
 
       // Eksik Konular
       document.getElementById("weakCount").textContent = state.weaks.filter(x => !x.done).length;
@@ -749,7 +843,7 @@
         </div>
       `).join("") : '<div class="muted">Henüz deneme kaydedilmedi.</div>';
 
-      // Soru Kaynakları
+      // Kaynaklar
       document.getElementById("booksList").innerHTML = state.books.length ? state.books.map(b => {
         const topics = (TOPICS[b.exam] && TOPICS[b.exam][b.subj]) || ["Genel"];
         const totQ = b.logs.reduce((s, l) => s + l.d + l.y + l.b, 0);
