@@ -1,0 +1,16 @@
+{
+  "name": "Melike YKS Asistanı",
+  "short_name": "Melike YKS",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8f5ff",
+  "theme_color": "#8b5cf6",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
