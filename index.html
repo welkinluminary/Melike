@@ -225,6 +225,9 @@
     .nav-btn.active { color: var(--accent); background: var(--accent-soft); }
     .q-photo { width: 100%; border-radius: 13px; margin-top: 8px; max-height: 200px; object-fit: cover; }
   </style>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#8b5cf6" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
 </head>
 <body>
   <div class="aurora"><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div></div>
@@ -891,6 +894,11 @@
 
     renderExamForm();
     renderAll();
+  </script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("sw.js");
+    }
   </script>
 </body>
 </html>
