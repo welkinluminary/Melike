@@ -278,9 +278,16 @@
           <div id="dailySchedule"></div>
         </div>
 
-        <!-- Günlük Rutinler -->
+        <!-- Günlük Rutinler + Streak & Koruyucu -->
         <div class="card">
-          <div class="card-title"><span>🎯 Günlük Rutinler</span><button class="mini-btn" onclick="resetDaily()">Sıfırla</button></div>
+          <div class="card-title">
+            <span>🎯 Günlük Rutinler</span>
+            <span style="display:flex;gap:5px;align-items:center;">
+              <span class="badge" id="streakBadge">🔥 0 Gün</span>
+              <span class="badge" id="shieldBadge">🛡️ 2</span>
+              <button class="mini-btn" onclick="resetDaily()">Sıfırla</button>
+            </span>
+          </div>
           <div style="margin-bottom:10px;">
             <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700;"><span>📖 Paragraf</span><span id="paraTxt">0 / 30</span></div>
             <div class="bar-bg"><div class="bar-fill" id="paraBar" style="width:0%"></div></div>
@@ -426,12 +433,12 @@
       </div>
     </section>
 
-    <!-- 4. ODAK TEKNİKLERİ & UYKU -->
+    <!-- 4. ODAK TEKNİKLERİ, GRAFİK & UYKU -->
     <section id="view-focus" class="view">
       <div class="card">
         <div class="card-title"><span>⏱ Odaklanma Teknikleri</span><span class="badge" id="techName">25 dk / 10 dk</span></div>
         <div class="timer-num" id="timerDisplay">25:00</div>
-        <div class="phase-tag" id="phaseTag">📖 Çalışma Zamanı</div>
+        <div class="phase-tag" id="phaseTag">📖 Çalışma Zamanı (Odaklan!)</div>
         <select id="techSelect" onchange="changeTech()">
           <option value="25-10">🍅 Pomodoro (25 dk Çalış / 10 dk Mola)</option>
           <option value="25-5">🍅 Klasik Pomodoro (25 dk Çalış / 5 dk Mola)</option>
@@ -443,6 +450,12 @@
           <button class="btn btn-primary" id="tBtn" onclick="toggleTimer()">Başlat</button>
           <button class="btn btn-soft" onclick="resetTimer()">Sıfırla</button>
         </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📈 Günlük Odak Süresi Grafiği</span><span class="badge" id="todayFocusBadge">Bugün: 0 dk</span></div>
+        <div id="focusChart" style="display:flex;align-items:flex-end;gap:8px;height:110px;padding-top:12px;"></div>
+        <div class="muted" style="margin-top:8px;">Önceki günlerle çalışma süreni karşılaştırabilirsin.</div>
       </div>
 
       <div class="card">
@@ -526,32 +539,59 @@
       }
     };
 
-    const state = JSON.parse(localStorage.getItem("melike_yks_v3") || "null") || {
-      para: 0, prob: 0, mood: null,
+    const TODAY_KEY = () => new Date().toISOString().slice(0, 10);
+
+    const state = JSON.parse(localStorage.getItem("melike_yks_v4") || "null") || {
+      lastDay: TODAY_KEY(),
+      para: 0, prob: 0,
+      streak: 0, shields: 2,
+      focusByDay: {},
+      mood: null,
       myTasks: [], notes: [],
       exams: [], weaks: [], books: [], homeworks: [], photos: []
     };
+
+    function checkDayRollover() {
+      const today = TODAY_KEY();
+      if (state.lastDay === today) return;
+
+      const completedYesterday = state.para >= 30 && state.prob >= 20;
+      if (completedYesterday) {
+        state.streak += 1;
+      } else if (state.streak > 0) {
+        if (state.shields > 0) {
+          state.shields -= 1;
+          sendFocusNotify("Melike YKS • Streak Koruyucu", "Dün hedefler tamamlanmadı ama bir streak koruma kullandınız! Alevin korundu 🛡️🔥");
+        } else {
+          state.streak = 0;
+        }
+      }
+
+      if (new Date().getDay() === 1) state.shields = Math.max(state.shields, 2);
+      state.para = 0;
+      state.prob = 0;
+      state.lastDay = today;
+      localStorage.setItem("melike_yks_v4", JSON.stringify(state));
+    }
+
+    checkDayRollover();
+    setInterval(checkDayRollover, 30000);
 
     let selectedDate = new Date();
     let calMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
     let curExamType = "TYT";
 
-    function save() { localStorage.setItem("melike_yks_v3", JSON.stringify(state)); renderAll(); }
+    function save() { localStorage.setItem("melike_yks_v4", JSON.stringify(state)); renderAll(); }
 
-    // Giriş / Çıkış
     function setRandomQuote() {
       document.getElementById("splashQuote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
     }
     setRandomQuote();
     function enterApp() { document.getElementById("splash").classList.add("hide"); }
-    function exitApp() {
-      setRandomQuote();
-      document.getElementById("splash").classList.remove("hide");
-    }
+    function exitApp() { setRandomQuote(); document.getElementById("splash").classList.remove("hide"); }
 
     document.getElementById("todayStr").textContent = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short", weekday: "short" });
 
-    // --- TAKVİM ---
     function setCalMode(mode, btn) {
       ["daily","weekly","monthly"].forEach(m => document.getElementById("cal-" + m).style.display = m === mode ? "block" : "none");
       btn.parentElement.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
@@ -625,8 +665,13 @@
       if (Math.abs(diff) > 45) { selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1)); renderCalendar(); }
     }, { passive: true });
 
-    // Hedefler, Görevler, Verimlilik, Notlar
-    function addGoal(k, n) { state[k] = Math.min(k === "para" ? 30 : 20, state[k] + n); save(); }
+    function addGoal(k, n) {
+      const wasDone = state.para >= 30 && state.prob >= 20;
+      state[k] = Math.min(k === "para" ? 30 : 20, state[k] + n);
+      const nowDone = state.para >= 30 && state.prob >= 20;
+      if (!wasDone && nowDone) state.streak += 1;
+      save();
+    }
     function resetDaily() { state.para = 0; state.prob = 0; save(); }
     function setMood(id) { state.mood = id; save(); }
 
@@ -649,7 +694,6 @@
     }
     function delNote(id) { state.notes = state.notes.filter(x => x.id !== id); save(); }
 
-    // --- DENEME ---
     function setExamType(type, btn) {
       curExamType = type;
       btn.parentElement.querySelectorAll(".seg-btn").forEach(b => b.classList.remove("active"));
@@ -702,7 +746,6 @@
       renderExamForm(); save();
     }
 
-    // --- KAYNAKLAR, ÖDEVLER, FOTO ---
     function addBook() {
       const name = document.getElementById("bkName").value.trim();
       if (!name) return;
@@ -753,29 +796,90 @@
       r.readAsDataURL(file);
     }
 
-    // --- ODAK & UYKU ---
-    let workMin = 25, breakMin = 10, isBreak = false, tSec = 25 * 60, tInt = null;
+    // --- ODAK SAYAÇ + GÜNLÜK GRAFİK + UYKU ---
+    let workMin = 25, breakMin = 10, isBreak = false, tSec = 25 * 60, tInt = null, endTime = null;
+
+    function requestNotifyPermission() {
+      if ("Notification" in window && Notification.permission === "default") Notification.requestPermission();
+    }
+    function sendFocusNotify(title, body) {
+      if ("Notification" in window && Notification.permission === "granted") {
+        if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+          navigator.serviceWorker.ready.then(reg => reg.showNotification(title, { body, icon: "icon.svg" })).catch(() => new Notification(title, { body }));
+        } else new Notification(title, { body });
+      }
+    }
+    function addFocusMinutes(mins) {
+      const k = TODAY_KEY();
+      state.focusByDay[k] = (state.focusByDay[k] || 0) + mins;
+      save();
+    }
+    function syncTimerFromClock() {
+      checkDayRollover();
+      if (!endTime) return;
+      const rem = Math.ceil((endTime - Date.now()) / 1000);
+      if (rem > 0) { tSec = rem; showT(); return; }
+      if (!isBreak) addFocusMinutes(workMin);
+      isBreak = !isBreak;
+      const nextMin = isBreak ? breakMin : workMin;
+      endTime = Date.now() + nextMin * 60 * 1000;
+      tSec = nextMin * 60;
+      showT();
+      const msg = isBreak ? `${workMin} dk odak bitti! Şimdi ${breakMin} dk mola.` : "Mola bitti! Yeni tur başlıyor.";
+      sendFocusNotify("Melike YKS", msg);
+      alert(isBreak ? `🎉 ${workMin} dk bitti! Şimdi ${breakMin} dk mola.` : "✨ Mola bitti! Yeni tur başlıyor.");
+    }
     function changeTech() {
       const [w, b] = document.getElementById("techSelect").value.split("-").map(Number);
-      workMin = w; breakMin = b; isBreak = false;
+      workMin = w; breakMin = b; isBreak = false; endTime = null;
       document.getElementById("techName").textContent = `${w} dk / ${b} dk`;
       resetTimer();
     }
     function showT() {
-      document.getElementById("timerDisplay").textContent = `${String(Math.floor(tSec/60)).padStart(2,"0")}:${String(tSec%60).padStart(2,"0")}`;
+      const s = Math.max(0, tSec);
+      document.getElementById("timerDisplay").textContent = `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
       document.getElementById("phaseTag").textContent = isBreak ? "☕ Mola Zamanı (Dinlen!)" : "📖 Çalışma Zamanı (Odaklan!)";
     }
     function toggleTimer() {
-      if (tInt) { clearInterval(tInt); tInt = null; document.getElementById("tBtn").textContent = "Devam Et"; }
-      else {
+      if (tInt || endTime) {
+        clearInterval(tInt); tInt = null; endTime = null;
+        document.getElementById("tBtn").textContent = "Devam Et";
+      } else {
+        requestNotifyPermission();
+        endTime = Date.now() + tSec * 1000;
         document.getElementById("tBtn").textContent = "Duraklat";
-        tInt = setInterval(() => {
-          if (tSec > 0) { tSec--; showT(); }
-          else { isBreak = !isBreak; tSec = (isBreak ? breakMin : workMin) * 60; showT(); alert(isBreak ? `🎉 ${workMin} dk bitti! Şimdi ${breakMin} dk mola.` : "✨ Mola bitti! Yeni tur başlıyor."); }
-        }, 1000);
+        tInt = setInterval(syncTimerFromClock, 500);
+        syncTimerFromClock();
       }
     }
-    function resetTimer() { clearInterval(tInt); tInt = null; isBreak = false; tSec = workMin * 60; document.getElementById("tBtn").textContent = "Başlat"; showT(); }
+    function resetTimer() { clearInterval(tInt); tInt = null; endTime = null; isBreak = false; tSec = workMin * 60; document.getElementById("tBtn").textContent = "Başlat"; showT(); }
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        checkDayRollover();
+        if (endTime) { syncTimerFromClock(); if (!tInt) tInt = setInterval(syncTimerFromClock, 500); }
+        renderAll();
+      }
+    });
+
+    function renderFocusChart() {
+      const days = [];
+      for (let i = -6; i <= 0; i++) {
+        const d = new Date(); d.setDate(d.getDate() + i);
+        const iso = d.toISOString().slice(0, 10);
+        days.push({ iso, lbl: d.toLocaleDateString("tr-TR", { weekday: "short" }), mins: state.focusByDay[iso] || 0 });
+      }
+      const maxM = Math.max(25, ...days.map(x => x.mins));
+      document.getElementById("todayFocusBadge").textContent = `Bugün: ${days[days.length - 1].mins} dk`;
+      document.getElementById("focusChart").innerHTML = days.map(d => {
+        const h = Math.max(8, Math.round((d.mins / maxM) * 75));
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;height:100%;justify-content:flex-end;">
+          <div style="font-size:10px;font-weight:800;color:var(--accent);">${d.mins}m</div>
+          <div style="width:100%;max-width:30px;height:${h}px;border-radius:8px 8px 4px 4px;background:linear-gradient(180deg,var(--accent),#c084fc);"></div>
+          <div style="font-size:10px;font-weight:700;color:var(--muted);">${d.lbl}</div>
+        </div>`;
+      }).join("");
+    }
 
     function calcSleep() {
       const [h, m] = document.getElementById("wakeTime").value.split(":").map(Number);
@@ -794,13 +898,16 @@
     }
 
     function renderAll() {
+      document.getElementById("streakBadge").textContent = `🔥 ${state.streak} Gün`;
+      document.getElementById("shieldBadge").textContent = `🛡️ ${state.shields}`;
+      renderFocusChart();
+
       renderCalendar();
       document.getElementById("paraTxt").textContent = `${state.para} / 30`;
       document.getElementById("paraBar").style.width = `${(state.para/30)*100}%`;
       document.getElementById("probTxt").textContent = `${state.prob} / 20`;
       document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
 
-      // Görevlerim
       document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map(t => `
         <div class="list-row">
           <div style="display:flex;align-items:center;gap:8px;flex:1;">
@@ -811,7 +918,6 @@
         </div>
       `).join("") : '<div class="muted">Bugün için kendine bir görev ekle!</div>';
 
-      // Verimlilik Yüz İfadeleri
       document.getElementById("moodRow").innerHTML = MOODS.map(m => `
         <button class="mood-btn ${state.mood === m.id ? "active" : ""}" onclick="setMood(${m.id})">
           ${m.ico}<span>${m.lbl}</span>
@@ -821,7 +927,6 @@
       const mBox = document.getElementById("moodMsg");
       if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
 
-      // Notlarım
       document.getElementById("noteList").innerHTML = state.notes.length ? state.notes.map(n => `
         <div class="list-row">
           <div>${n.text} <span class="muted">(${n.date})</span></div>
@@ -829,7 +934,6 @@
         </div>
       `).join("") : '<div class="muted">Henüz not eklemedin.</div>';
 
-      // Eksik Konular
       document.getElementById("weakCount").textContent = state.weaks.filter(x => !x.done).length;
       document.getElementById("weakList").innerHTML = state.weaks.length ? state.weaks.map(x => `
         <div class="list-row">
@@ -838,7 +942,6 @@
         </div>
       `).join("") : '<div class="muted">Eksik konu yok, harikasın!</div>';
 
-      // Deneme Geçmişi
       document.getElementById("examHistory").innerHTML = state.exams.length ? state.exams.map(e => `
         <div class="list-row">
           <div><span class="badge">${e.type}</span> <b>${e.title}</b> <span class="muted">(${e.date})</span></div>
@@ -846,7 +949,6 @@
         </div>
       `).join("") : '<div class="muted">Henüz deneme kaydedilmedi.</div>';
 
-      // Kaynaklar
       document.getElementById("booksList").innerHTML = state.books.length ? state.books.map(b => {
         const topics = (TOPICS[b.exam] && TOPICS[b.exam][b.subj]) || ["Genel"];
         const totQ = b.logs.reduce((s, l) => s + l.d + l.y + l.b, 0);
@@ -868,7 +970,6 @@
         `;
       }).join("") : '<div class="muted">Henüz soru kaynağı eklenmedi.</div>';
 
-      // Ödevler
       document.getElementById("hwList").innerHTML = state.homeworks.length ? state.homeworks.map(h => {
         const pct = Math.round((h.doneCount / h.target) * 100);
         return `
@@ -883,7 +984,6 @@
         `;
       }).join("") : '<div class="muted">Henüz ödev eklenmedi.</div>';
 
-      // Fotoğraflar
       document.getElementById("photoList").innerHTML = state.photos.length ? state.photos.map(p => `
         <div style="padding:8px 0;border-bottom:1px solid #f3e8ff;">
           <div style="display:flex;justify-content:space-between;"><span><span class="badge">${p.subj}</span> ${p.note}</span><button class="del" onclick="state.photos=state.photos.filter(i=>i.id!==${p.id});save()">×</button></div>
