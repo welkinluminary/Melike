@@ -922,8 +922,8 @@
           </div>
           <button class="del" onclick="delMyTask(${t.id})">×</button>
         </div>
-      `).join("") : '<div class="muted">Bugün için kendine bir görev ekle!</div>';
-
+      `).join("") : '<div class="muted">Henüz görev eklenmedi.</div>';
+      
       document.getElementById("moodRow").innerHTML = MOODS.map(m => `
         <button class="mood-btn ${state.mood === m.id ? "active" : ""}" onclick="setMood(${m.id})">
           ${m.ico}<span>${m.lbl}</span>
