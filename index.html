@@ -678,12 +678,18 @@
     function addMyTask() {
       const v = document.getElementById("myTaskInput").value.trim();
       if (!v) return;
-      state.myTasks.unshift({ id: Date.now(), text: v, done: false });
+      state.myTasks.push({ id: Date.now(), text: v, done: false });
       document.getElementById("myTaskInput").value = "";
       save();
     }
-    function toggleMyTask(id) { state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x); save(); }
-    function delMyTask(id) { state.myTasks = state.myTasks.filter(x => x.id !== id); save(); }
+    function toggleMyTask(id) {
+      state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x);
+      save();
+    }
+    function delMyTask(id) {
+      state.myTasks = state.myTasks.filter(x => x.id !== id);
+      save();
+    }
 
     function addNote() {
       const v = document.getElementById("noteInput").value.trim();
