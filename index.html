@@ -914,11 +914,11 @@
       document.getElementById("probTxt").textContent = `${state.prob} / 20`;
       document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
 
-      document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map(t => `
-        <div class="list-row">
-          <div style="display:flex;align-items:center;gap:8px;flex:1;">
+      document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map((t, idx) => `
+        <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;">
             <div class="check ${t.done ? "done" : ""}" onclick="toggleMyTask(${t.id})">${t.done ? "✓" : ""}</div>
-            <span style="${t.done ? "text-decoration:line-through;color:var(--muted)" : ""}">${t.text}</span>
+            <span style="${t.done ? "text-decoration:line-through;color:var(--muted)" : "font-weight:600;"}">${idx + 1}. ${t.text}</span>
           </div>
           <button class="del" onclick="delMyTask(${t.id})">×</button>
         </div>
