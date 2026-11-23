@@ -690,6 +690,14 @@
       state.myTasks = state.myTasks.filter(x => x.id !== id);
       save();
     }
+    function toggleMyTask(id) {
+      state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x);
+      save();
+    }
+    function delMyTask(id) {
+      state.myTasks = state.myTasks.filter(x => x.id !== id);
+      save();
+    }
 
     function addNote() {
       const v = document.getElementById("noteInput").value.trim();
