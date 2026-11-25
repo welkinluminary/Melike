@@ -199,6 +199,7 @@
     .badge-mint { background: #d1fae5; color: #059669; }
     .del { background: none; border: none; color: var(--muted); font-size: 18px; cursor: pointer; }
     .muted { color: var(--muted); font-size: 12px; }
+    .task-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
     .timer-num {
       font-size: 54px; font-weight: 800; text-align: center; margin: 6px 0 10px;
@@ -212,16 +213,16 @@
 
     .bottom-nav {
       position: fixed; bottom: calc(12px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%);
-      width: calc(100% - 24px); max-width: 496px;
+      width: calc(100% - 18px); max-width: 504px;
       background: var(--glass-strong); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
-      border: 1px solid var(--border); border-radius: 24px; padding: 7px 5px;
-      display: grid; grid-template-columns: repeat(4, 1fr); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15); z-index: 50;
+      border: 1px solid var(--border); border-radius: 24px; padding: 6px 4px;
+      display: grid; grid-template-columns: repeat(6, 1fr); box-shadow: 0 12px 30px rgba(139, 92, 246, 0.15); z-index: 50;
     }
     .nav-btn {
       background: none; border: none; display: flex; flex-direction: column; align-items: center; gap: 2px;
-      font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; padding: 6px 0; border-radius: 16px;
+      font-size: 10px; font-weight: 700; color: var(--muted); cursor: pointer; padding: 6px 2px; border-radius: 14px;
     }
-    .nav-btn .ico { font-size: 18px; }
+    .nav-btn .ico { font-size: 17px; }
     .nav-btn.active { color: var(--accent); background: var(--accent-soft); }
     .q-photo { width: 100%; border-radius: 13px; margin-top: 8px; max-height: 200px; object-fit: cover; }
   </style>
@@ -310,12 +311,12 @@
           <div id="didTodayList" style="margin-top:10px;"></div>
         </div>
 
-        <!-- Sonraki Günlere Aktarılan Yapılacaklar (Tamamlanana kadar diğer günlerde de görünür) -->
+        <!-- Sonraki Günlere Aktarılan Yapılacaklar (Sadece aktif/tamamlanmamış görevler) -->
         <div class="card">
-          <div class="card-title"><span>🔁 Sonraki Günlere Aktarılan Yapılacaklar</span></div>
+          <div class="card-title"><span>🔁 Aktif Yapılacaklar</span><span class="badge" id="activeTaskCountBadge">0</span></div>
           <div style="display:flex;gap:6px;">
             <input type="text" id="myTaskInput" placeholder="Örn: 30 soru Fizik çöz, Paragraf testi bitir..." style="margin-bottom:0;" />
-            <button class="btn btn-primary" style="width:auto;padding:0 16px;" onclick="addMyTask()">Ekle</button>
+            <button class="btn btn-primary" style="width:auto;padding:0 16px;" onclick="addMyTask('myTaskInput')">Ekle</button>
           </div>
           <div id="myTaskList" style="margin-top:10px;"></div>
         </div>
@@ -327,10 +328,10 @@
           <div class="mood-msg" id="moodMsg"></div>
         </div>
 
-        <!-- Hızlı Notlarım -->
+        <!-- Hızlı Notlarım (Sadece seçili güne özel) -->
         <div class="card">
-          <div class="card-title"><span>📝 Notlarım</span></div>
-          <textarea id="noteInput" rows="2" placeholder="Kendine bir not, hatırlatma veya formül yaz..."></textarea>
+          <div class="card-title"><span>📝 Günün Notları</span><span class="badge" id="noteDayBadge"></span></div>
+          <textarea id="noteInput" rows="2" placeholder="Bu güne özel not, hatırlatma veya formül yaz..."></textarea>
           <button class="btn btn-soft" onclick="addNote()">+ Notu Kaydet</button>
           <div id="noteList" style="margin-top:10px;"></div>
         </div>
@@ -364,7 +365,39 @@
       </div>
     </section>
 
-    <!-- 2. DENEME & NET TAKİBİ -->
+    <!-- 2. YAPILACAKLAR (AKTİF + TAMAMLANANLAR ARŞİVİ) -->
+    <section id="view-tasks" class="view">
+      <div class="card">
+        <div class="card-title"><span>➕ Yeni Görev Ekle</span></div>
+        <div style="display:flex;gap:6px;">
+          <input type="text" id="tasksTabInput" placeholder="Yapılacak yeni bir görev yaz..." style="margin-bottom:0;" />
+          <button class="btn btn-primary" style="width:auto;padding:0 16px;" onclick="addMyTask('tasksTabInput')">Ekle</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>⏳ Aktif Görevler (Tamamlanmayanlar)</span><span class="badge badge-warn" id="activeTasksTabCount">0</span></div>
+        <div id="activeTasksTabList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>✅ Tamamlanan Görevler</span><span class="badge badge-mint" id="completedTasksTabCount">0</span></div>
+        <div id="completedTasksTabList"></div>
+      </div>
+    </section>
+
+    <!-- 3. NOTLARIM DEFTERİ (TARİH BAŞLIKLI TÜM NOTLAR) -->
+    <section id="view-notes" class="view">
+      <div class="card">
+        <div class="card-title"><span>✍️ Bugüne Hızlı Not Ekle</span><span class="badge" id="notesTabTodayBadge"></span></div>
+        <textarea id="notesTabInput" rows="2" placeholder="Bugünün tarihine yeni bir not ekle..."></textarea>
+        <button class="btn btn-primary" onclick="addNoteFromTab()">+ Deftere Kaydet</button>
+      </div>
+
+      <div id="allNotesNotebook"></div>
+    </section>
+
+    <!-- 4. DENEME & NET TAKİBİ -->
     <section id="view-exam" class="view">
       <div class="seg-bar" style="grid-template-columns:1fr 1fr;">
         <button class="seg-btn active" onclick="setExamType('TYT', this)">TYT Deneme (120)</button>
@@ -402,7 +435,7 @@
       </div>
     </section>
 
-    <!-- 3. SORU KAYNAKLARI, ÖDEVLER & ARŞİV -->
+    <!-- 5. SORU KAYNAKLARI, ÖDEVLER & ARŞİV -->
     <section id="view-books" class="view">
       <div class="card">
         <div class="card-title"><span>📚 Soru Kaynaklarım</span></div>
@@ -443,7 +476,7 @@
       </div>
     </section>
 
-    <!-- 4. ODAK TEKNİKLERİ, GRAFİK & UYKU -->
+    <!-- 6. ODAK TEKNİKLERİ, GRAFİK & UYKU -->
     <section id="view-focus" class="view">
       <div class="card">
         <div class="card-title"><span>⏱ Odaklanma Teknikleri</span><span class="badge" id="techName">25 dk / 10 dk</span></div>
@@ -479,6 +512,8 @@
 
   <nav class="bottom-nav">
     <button class="nav-btn active" onclick="switchView('cal', this)"><span class="ico">📅</span>Takvim</button>
+    <button class="nav-btn" onclick="switchView('tasks', this)"><span class="ico">✅</span>Görev</button>
+    <button class="nav-btn" onclick="switchView('notes', this)"><span class="ico">📝</span>Notlar</button>
     <button class="nav-btn" onclick="switchView('exam', this)"><span class="ico">📊</span>Deneme</button>
     <button class="nav-btn" onclick="switchView('books', this)"><span class="ico">📚</span>Kaynak</button>
     <button class="nav-btn" onclick="switchView('focus', this)"><span class="ico">⏱</span>Odak</button>
@@ -558,6 +593,17 @@
     const TODAY_KEY = () => formatDayKey(new Date());
     const getSelectedDayKey = () => formatDayKey(selectedDate);
 
+    function formatDateTime(d = new Date()) {
+      const datePart = d.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+      const timePart = d.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" });
+      return `${datePart} ${timePart}`;
+    }
+
+    function formatFullDateTR(dayKey) {
+      const [y, m, d] = dayKey.split("-").map(Number);
+      return new Date(y, m - 1, d).toLocaleDateString("tr-TR", { day: "numeric", month: "long", year: "numeric", weekday: "long" });
+    }
+
     function createEmptyDayData() {
       return { para: 0, prob: 0, focusMin: 0, mood: null, didToday: [], notes: [] };
     }
@@ -573,7 +619,11 @@
     const state = {
       ...rawState,
       dayDataByDay: rawState.dayDataByDay || {},
-      myTasks: rawState.myTasks || []
+      myTasks: (rawState.myTasks || []).map(t => ({
+        ...t,
+        createdAt: t.createdAt || formatDateTime(new Date(t.id || Date.now())),
+        completedAt: t.completedAt || (t.done ? formatDateTime(new Date()) : null)
+      }))
     };
 
     // Eski v5 verileri varsa bugüne aktar
@@ -643,10 +693,13 @@
       btn.classList.add("active");
       renderCalendar();
     }
-    function selectDayOffset(d) {
-      selectedDate = new Date(d);
+
+    function selectDayKey(dayKey) {
+      const [y, m, d] = dayKey.split("-").map(Number);
+      selectedDate = new Date(y, m - 1, d);
       renderAll();
     }
+
     function changeMonth(delta) {
       calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
       renderCalendar();
@@ -668,10 +721,12 @@
     function renderCalendar() {
       const strip = document.getElementById("dayStrip");
       const chips = [];
+      const selKey = getSelectedDayKey();
       for (let i = -3; i <= 7; i++) {
-        const d = new Date(selectedDate); d.setDate(selectedDate.getDate() + i);
-        const active = d.toDateString() === selectedDate.toDateString();
-        chips.push(`<div class="day-chip ${active ? "active" : ""}" onclick="selectDayOffset('${d.toISOString()}')">
+        const d = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + i);
+        const key = formatDayKey(d);
+        const active = key === selKey;
+        chips.push(`<div class="day-chip ${active ? "active" : ""}" onclick="selectDayKey('${key}')">
           <div class="dn">${d.toLocaleDateString("tr-TR", { weekday: "short" })}</div>
           <div class="dd">${d.getDate()}</div>
         </div>`);
@@ -680,7 +735,7 @@
       document.getElementById("selectedDayTitle").textContent = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "long", weekday: "long" });
       document.getElementById("dailySchedule").innerHTML = renderLessonsHTML(selectedDate.getDay());
 
-      const tom = new Date(selectedDate); tom.setDate(selectedDate.getDate() + 1);
+      const tom = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + 1);
       document.getElementById("tomorrowName").textContent = tom.toLocaleDateString("tr-TR", { weekday: "long" });
       document.getElementById("tomorrowPreview").innerHTML = renderLessonsHTML(tom.getDay());
 
@@ -692,12 +747,13 @@
       document.getElementById("monthLabel").textContent = calMonth.toLocaleDateString("tr-TR", { month: "long", year: "numeric" });
       const firstDow = (calMonth.getDay() + 6) % 7;
       const daysInMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
-      const todayStr = new Date().toDateString();
+      const todayKey = TODAY_KEY();
       let html = ["Pt","Sa","Ça","Pe","Cu","Ct","Pz"].map(x => `<div class="cal-dow">${x}</div>`).join("");
       for (let i = 0; i < firstDow; i++) html += `<div class="cal-cell empty"></div>`;
       for (let d = 1; d <= daysInMonth; d++) {
         const dt = new Date(calMonth.getFullYear(), calMonth.getMonth(), d);
-        const cls = dt.toDateString() === selectedDate.toDateString() ? "selected" : (dt.toDateString() === todayStr ? "today" : "");
+        const key = formatDayKey(dt);
+        const cls = key === selKey ? "selected" : (key === todayKey ? "today" : "");
         html += `<div class="cal-cell ${cls}" onclick="pickFromMonth(${d})">${d}</div>`;
       }
       document.getElementById("monthGrid").innerHTML = html;
@@ -714,7 +770,10 @@
     sw.addEventListener("touchstart", e => { touchX = e.changedTouches[0].screenX; }, { passive: true });
     sw.addEventListener("touchend", e => {
       const diff = e.changedTouches[0].screenX - touchX;
-      if (Math.abs(diff) > 45) { selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1)); renderAll(); }
+      if (Math.abs(diff) > 45) {
+        selectedDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), selectedDate.getDate() + (diff < 0 ? 1 : -1));
+        renderAll();
+      }
     }, { passive: true });
 
     function addGoal(k, n) {
@@ -740,26 +799,41 @@
     function addDidToday() {
       const v = document.getElementById("didTodayInput").value.trim();
       if (!v) return;
-      const dData = getDayData();
+      const dData = getDayData(getSelectedDayKey());
       dData.didToday.push({ id: Date.now(), text: v });
       document.getElementById("didTodayInput").value = "";
       save();
     }
     function delDidToday(id) {
-      const dData = getDayData();
+      const dData = getDayData(getSelectedDayKey());
       dData.didToday = dData.didToday.filter(x => x.id !== id);
       save();
     }
 
-    function addMyTask() {
-      const v = document.getElementById("myTaskInput").value.trim();
+    function addMyTask(inputId = "myTaskInput") {
+      const el = document.getElementById(inputId);
+      const v = el.value.trim();
       if (!v) return;
-      state.myTasks.push({ id: Date.now(), text: v, done: false });
-      document.getElementById("myTaskInput").value = "";
+      state.myTasks.unshift({
+        id: Date.now(),
+        text: v,
+        done: false,
+        createdAt: formatDateTime(new Date()),
+        completedAt: null
+      });
+      el.value = "";
       save();
     }
     function toggleMyTask(id) {
-      state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x);
+      state.myTasks = state.myTasks.map(x => {
+        if (x.id !== id) return x;
+        const nextDone = !x.done;
+        return {
+          ...x,
+          done: nextDone,
+          completedAt: nextDone ? formatDateTime(new Date()) : null
+        };
+      });
       save();
     }
     function delMyTask(id) {
@@ -770,14 +844,24 @@
     function addNote() {
       const v = document.getElementById("noteInput").value.trim();
       if (!v) return;
-      const dData = getDayData();
-      dData.notes.unshift({ id: Date.now(), text: v, date: selectedDate.toLocaleDateString("tr-TR") });
+      const key = getSelectedDayKey();
+      const dData = getDayData(key);
+      dData.notes.unshift({ id: Date.now(), text: v, time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) });
       document.getElementById("noteInput").value = "";
       save();
     }
-    function delNote(id) {
-      const dData = getDayData();
-      dData.notes = dData.notes.filter(x => x.id !== id);
+    function addNoteFromTab() {
+      const v = document.getElementById("notesTabInput").value.trim();
+      if (!v) return;
+      const key = TODAY_KEY();
+      const dData = getDayData(key);
+      dData.notes.unshift({ id: Date.now(), text: v, time: new Date().toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" }) });
+      document.getElementById("notesTabInput").value = "";
+      save();
+    }
+    function delNoteByDay(dayKey, id) {
+      const dData = getDayData(dayKey);
+      dData.notes = (dData.notes || []).filter(x => x.id !== id);
       save();
     }
 
@@ -985,44 +1069,110 @@
       btn.classList.add("active");
     }
 
+    function renderTasksTab() {
+      const activeTasks = state.myTasks.filter(t => !t.done);
+      const completedTasks = state.myTasks.filter(t => t.done);
+
+      document.getElementById("activeTasksTabCount").textContent = activeTasks.length;
+      document.getElementById("completedTasksTabCount").textContent = completedTasks.length;
+
+      document.getElementById("activeTasksTabList").innerHTML = activeTasks.length ? activeTasks.map((t, idx) => `
+        <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;">
+            <div class="check" onclick="toggleMyTask(${t.id})"></div>
+            <div>
+              <div style="font-weight:600;">${idx + 1}. ${t.text}</div>
+              <div class="task-meta">📌 ${t.createdAt} girildi • Henüz tamamlanmadı</div>
+            </div>
+          </div>
+          <button class="del" onclick="delMyTask(${t.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Harika! Bekleyen aktif görev yok.</div>';
+
+      document.getElementById("completedTasksTabList").innerHTML = completedTasks.length ? completedTasks.map((t, idx) => `
+        <div class="list-row" style="background:rgba(255,255,255,0.75);border:1px solid #d1fae5;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;">
+            <div class="check done" onclick="toggleMyTask(${t.id})">✓</div>
+            <div>
+              <div style="text-decoration:line-through;color:var(--muted);font-weight:600;">${idx + 1}. ${t.text}</div>
+              <div class="task-meta">📌 ${t.createdAt} girildi • ✅ ${t.completedAt || "Tamamlandı"} tamamlandı</div>
+            </div>
+          </div>
+          <button class="del" onclick="delMyTask(${t.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Henüz tamamlanan görev yok.</div>';
+    }
+
+    function renderNotesTab() {
+      document.getElementById("notesTabTodayBadge").textContent = new Date().toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+      const keysWithNotes = Object.keys(state.dayDataByDay)
+        .filter(k => state.dayDataByDay[k] && state.dayDataByDay[k].notes && state.dayDataByDay[k].notes.length > 0)
+        .sort((a, b) => b.localeCompare(a));
+
+      document.getElementById("allNotesNotebook").innerHTML = keysWithNotes.length ? keysWithNotes.map(dayKey => {
+        const notes = state.dayDataByDay[dayKey].notes;
+        return `
+          <div class="card">
+            <div class="card-title">
+              <span>📅 ${formatFullDateTR(dayKey)}</span>
+              <span class="badge">${notes.length} not</span>
+            </div>
+            ${notes.map(n => `
+              <div class="list-row" style="background:rgba(255,255,255,0.88);border:1px solid #ede9fe;border-radius:12px;padding:9px 11px;margin-bottom:7px;">
+                <div>
+                  <div style="font-weight:500;">${n.text}</div>
+                  ${n.time ? `<div class="task-meta">🕒 ${n.time}</div>` : ""}
+                </div>
+                <button class="del" onclick="delNoteByDay('${dayKey}', ${n.id})">×</button>
+              </div>
+            `).join("")}
+          </div>
+        `;
+      }).join("") : '<div class="card"><div class="muted" style="text-align:center;">Henüz hiçbir gün için not alınmadı.</div></div>';
+    }
+
     function renderAll() {
       document.getElementById("streakBadge").textContent = `🔥 ${state.streak} Gün`;
       document.getElementById("shieldBadge").textContent = `🛡️ ${state.shields}`;
       renderFocusChart();
-
       renderCalendar();
 
-      const dData = getDayData();
+      const selKey = getSelectedDayKey();
+      const dData = getDayData(selKey);
+      const shortDateLbl = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+
       document.getElementById("paraTxt").textContent = `${dData.para || 0} / 30`;
       document.getElementById("paraBar").style.width = `${((dData.para || 0) / 30) * 100}%`;
       document.getElementById("probTxt").textContent = `${dData.prob || 0} / 20`;
       document.getElementById("probBar").style.width = `${((dData.prob || 0) / 20) * 100}%`;
 
+      // Bugün Neler Yaptım? (Sadece seçili güne özel)
       const dayDidList = dData.didToday || [];
-      const badgeEl = document.getElementById("doneTodayBadge");
-      if (badgeEl) {
-        badgeEl.textContent = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
-      }
-      const didListEl = document.getElementById("didTodayList");
-      if (didListEl) {
-        didListEl.innerHTML = dayDidList.length ? dayDidList.map((item, idx) => `
-          <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
-            <span style="font-weight:600;">• ${idx + 1}. ${item.text}</span>
-            <button class="del" onclick="delDidToday(${item.id})">×</button>
-          </div>
-        `).join("") : '<div class="muted">Bu gün için henüz yapılan bir şey yazılmadı.</div>';
-      }
+      document.getElementById("doneTodayBadge").textContent = shortDateLbl;
+      document.getElementById("didTodayList").innerHTML = dayDidList.length ? dayDidList.map((item, idx) => `
+        <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
+          <span style="font-weight:600;">• ${idx + 1}. ${item.text}</span>
+          <button class="del" onclick="delDidToday(${item.id})">×</button>
+        </div>
+      `).join("") : '<div class="muted">Bu gün için henüz yapılan bir şey yazılmadı.</div>';
 
-      document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map((t, idx) => `
+      // Ana ekranda sadece aktif (tamamlanmamış) görevler
+      const activeTasks = state.myTasks.filter(t => !t.done);
+      document.getElementById("activeTaskCountBadge").textContent = activeTasks.length;
+      document.getElementById("myTaskList").innerHTML = activeTasks.length ? activeTasks.map((t, idx) => `
         <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:10px;flex:1;">
-            <div class="check ${t.done ? "done" : ""}" onclick="toggleMyTask(${t.id})">${t.done ? "✓" : ""}</div>
-            <span style="${t.done ? "text-decoration:line-through;color:var(--muted)" : "font-weight:600;"}">${idx + 1}. ${t.text}</span>
+            <div class="check" onclick="toggleMyTask(${t.id})"></div>
+            <div>
+              <div style="font-weight:600;">${idx + 1}. ${t.text}</div>
+              <div class="task-meta">📌 ${t.createdAt}</div>
+            </div>
           </div>
           <button class="del" onclick="delMyTask(${t.id})">×</button>
         </div>
-      `).join("") : '<div class="muted">Henüz görev eklenmedi.</div>';
+      `).join("") : '<div class="muted">Bekleyen aktif görev yok.</div>';
 
+      // Verimlilik (Seçili güne özel)
       const curMoodId = dData.mood || null;
       document.getElementById("moodRow").innerHTML = MOODS.map(m => `
         <button class="mood-btn ${curMoodId === m.id ? "active" : ""}" onclick="setMood(${m.id})">
@@ -1033,13 +1183,19 @@
       const mBox = document.getElementById("moodMsg");
       if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
 
+      // Günün Notları (Sadece seçili güne özel)
+      document.getElementById("noteDayBadge").textContent = shortDateLbl;
       const dayNotes = dData.notes || [];
       document.getElementById("noteList").innerHTML = dayNotes.length ? dayNotes.map(n => `
         <div class="list-row">
-          <div>${n.text} <span class="muted">(${n.date})</span></div>
-          <button class="del" onclick="delNote(${n.id})">×</button>
+          <div>${n.text} ${n.time ? `<span class="muted">(${n.time})</span>` : ""}</div>
+          <button class="del" onclick="delNoteByDay('${selKey}', ${n.id})">×</button>
         </div>
       `).join("") : '<div class="muted">Bu gün için henüz not eklenmedi.</div>';
+
+      // Görevler ve Notlarım sekmelerini güncelle
+      renderTasksTab();
+      renderNotesTab();
 
       document.getElementById("weakCount").textContent = state.weaks.filter(x => !x.done).length;
       document.getElementById("weakList").innerHTML = state.weaks.length ? state.weaks.map(x => `
