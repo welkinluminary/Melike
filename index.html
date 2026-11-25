@@ -300,7 +300,7 @@
           </div>
         </div>
 
-<!-- Bugün Neler Yaptım? (Sadece seçili güne özel, başka güne taşmaz) -->
+        <!-- Bugün Neler Yaptım? (Sadece seçili güne özel, başka güne taşmaz) -->
         <div class="card">
           <div class="card-title"><span>✨ Bugün Neler Yaptım?</span><span class="badge" id="doneTodayBadge"></span></div>
           <div style="display:flex;gap:6px;">
@@ -549,16 +549,33 @@
       }
     };
 
-    const TODAY_KEY = () => new Date().toISOString().slice(0, 10);
+    const formatDayKey = (d = new Date()) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${day}`;
+    };
+    const TODAY_KEY = () => formatDayKey(new Date());
+    const getSelectedDayKey = () => formatDayKey(selectedDate);
 
-    const state = JSON.parse(localStorage.getItem("melike_yks_v4") || "null") || {
+    const rawState = JSON.parse(localStorage.getItem("melike_yks_v5") || "null") || {
       lastDay: TODAY_KEY(),
       para: 0, prob: 0,
       streak: 0, shields: 2,
       focusByDay: {},
-      mood: null,
-      myTasks: [], notes: [],
+      moodByDay: {},
+      didTodayByDay: {},
+      myTasks: [],
+      notes: [],
       exams: [], weaks: [], books: [], homeworks: [], photos: []
+    };
+
+    const state = {
+      ...rawState,
+      focusByDay: rawState.focusByDay || {},
+      moodByDay: rawState.moodByDay || {},
+      didTodayByDay: rawState.didTodayByDay || {},
+      myTasks: rawState.myTasks || []
     };
 
     function checkDayRollover() {
@@ -581,7 +598,7 @@
       state.para = 0;
       state.prob = 0;
       state.lastDay = today;
-      localStorage.setItem("melike_yks_v4", JSON.stringify(state));
+      localStorage.setItem("melike_yks_v5", JSON.stringify(state));
     }
 
     checkDayRollover();
@@ -591,7 +608,7 @@
     let calMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
     let curExamType = "TYT";
 
-    function save() { localStorage.setItem("melike_yks_v4", JSON.stringify(state)); renderAll(); }
+    function save() { localStorage.setItem("melike_yks_v5", JSON.stringify(state)); renderAll(); }
 
     function setRandomQuote() {
       document.getElementById("splashQuote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
@@ -683,21 +700,33 @@
       save();
     }
     function resetDaily() { state.para = 0; state.prob = 0; save(); }
-    function setMood(id) { state.mood = id; save(); }
+    function setMood(id) {
+      const key = getSelectedDayKey();
+      state.moodByDay[key] = state.moodByDay[key] === id ? null : id;
+      save();
+    }
+
+    function addDidToday() {
+      const v = document.getElementById("didTodayInput").value.trim();
+      if (!v) return;
+      const key = getSelectedDayKey();
+      if (!state.didTodayByDay[key]) state.didTodayByDay[key] = [];
+      state.didTodayByDay[key].push({ id: Date.now(), text: v });
+      document.getElementById("didTodayInput").value = "";
+      save();
+    }
+
+    function delDidToday(id) {
+      const key = getSelectedDayKey();
+      state.didTodayByDay[key] = (state.didTodayByDay[key] || []).filter(x => x.id !== id);
+      save();
+    }
 
     function addMyTask() {
       const v = document.getElementById("myTaskInput").value.trim();
       if (!v) return;
       state.myTasks.push({ id: Date.now(), text: v, done: false });
       document.getElementById("myTaskInput").value = "";
-      save();
-    }
-    function toggleMyTask(id) {
-      state.myTasks = state.myTasks.map(x => x.id === id ? { ...x, done: !x.done } : x);
-      save();
-    }
-    function delMyTask(id) {
-      state.myTasks = state.myTasks.filter(x => x.id !== id);
       save();
     }
     function toggleMyTask(id) {
@@ -890,7 +919,7 @@
       const days = [];
       for (let i = -6; i <= 0; i++) {
         const d = new Date(); d.setDate(d.getDate() + i);
-        const iso = d.toISOString().slice(0, 10);
+        const iso = formatDayKey(d);
         days.push({ iso, lbl: d.toLocaleDateString("tr-TR", { weekday: "short" }), mins: state.focusByDay[iso] || 0 });
       }
       const maxM = Math.max(25, ...days.map(x => x.mins));
@@ -967,6 +996,7 @@
       const selMood = MOODS.find(m => m.id === curMoodId);
       const mBox = document.getElementById("moodMsg");
       if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
+
       document.getElementById("noteList").innerHTML = state.notes.length ? state.notes.map(n => `
         <div class="list-row">
           <div>${n.text} <span class="muted">(${n.date})</span></div>
