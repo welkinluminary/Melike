@@ -558,31 +558,48 @@
     const TODAY_KEY = () => formatDayKey(new Date());
     const getSelectedDayKey = () => formatDayKey(selectedDate);
 
-    const rawState = JSON.parse(localStorage.getItem("melike_yks_v5") || "null") || {
+    function createEmptyDayData() {
+      return { para: 0, prob: 0, focusMin: 0, mood: null, didToday: [], notes: [] };
+    }
+
+    const rawState = JSON.parse(localStorage.getItem("melike_yks_v6") || localStorage.getItem("melike_yks_v5") || "null") || {
       lastDay: TODAY_KEY(),
-      para: 0, prob: 0,
       streak: 0, shields: 2,
-      focusByDay: {},
-      moodByDay: {},
-      didTodayByDay: {},
+      dayDataByDay: {},
       myTasks: [],
-      notes: [],
       exams: [], weaks: [], books: [], homeworks: [], photos: []
     };
 
     const state = {
       ...rawState,
-      focusByDay: rawState.focusByDay || {},
-      moodByDay: rawState.moodByDay || {},
-      didTodayByDay: rawState.didTodayByDay || {},
+      dayDataByDay: rawState.dayDataByDay || {},
       myTasks: rawState.myTasks || []
     };
+
+    // Eski v5 verileri varsa bugüne aktar
+    if (rawState.focusByDay || rawState.moodByDay || rawState.didTodayByDay || rawState.notes || typeof rawState.para === "number" || typeof rawState.prob === "number") {
+      const tKey = TODAY_KEY();
+      const base = state.dayDataByDay[tKey] || createEmptyDayData();
+      state.dayDataByDay[tKey] = {
+        para: Math.max(base.para || 0, rawState.para || 0),
+        prob: Math.max(base.prob || 0, rawState.prob || 0),
+        focusMin: Math.max(base.focusMin || 0, (rawState.focusByDay && rawState.focusByDay[tKey]) || 0),
+        mood: base.mood || (rawState.moodByDay && rawState.moodByDay[tKey]) || null,
+        didToday: (base.didToday && base.didToday.length) ? base.didToday : ((rawState.didTodayByDay && rawState.didTodayByDay[tKey]) || []),
+        notes: (base.notes && base.notes.length) ? base.notes : (rawState.notes || [])
+      };
+    }
+
+    function getDayData(key = getSelectedDayKey()) {
+      if (!state.dayDataByDay[key]) state.dayDataByDay[key] = createEmptyDayData();
+      return state.dayDataByDay[key];
+    }
 
     function checkDayRollover() {
       const today = TODAY_KEY();
       if (state.lastDay === today) return;
-
-      const completedYesterday = state.para >= 30 && state.prob >= 20;
+      const prevData = getDayData(state.lastDay);
+      const completedYesterday = (prevData.para || 0) >= 30 && (prevData.prob || 0) >= 20;
       if (completedYesterday) {
         state.streak += 1;
       } else if (state.streak > 0) {
@@ -593,12 +610,10 @@
           state.streak = 0;
         }
       }
-
       if (new Date().getDay() === 1) state.shields = Math.max(state.shields, 2);
-      state.para = 0;
-      state.prob = 0;
       state.lastDay = today;
-      localStorage.setItem("melike_yks_v5", JSON.stringify(state));
+      getDayData(today);
+      localStorage.setItem("melike_yks_v6", JSON.stringify(state));
     }
 
     checkDayRollover();
@@ -608,7 +623,10 @@
     let calMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
     let curExamType = "TYT";
 
-    function save() { localStorage.setItem("melike_yks_v5", JSON.stringify(state)); renderAll(); }
+    function save() {
+      localStorage.setItem("melike_yks_v6", JSON.stringify(state));
+      renderAll();
+    }
 
     function setRandomQuote() {
       document.getElementById("splashQuote").textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
@@ -625,8 +643,14 @@
       btn.classList.add("active");
       renderCalendar();
     }
-    function selectDayOffset(d) { selectedDate = new Date(d); renderCalendar(); }
-    function changeMonth(delta) { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1); renderCalendar(); }
+    function selectDayOffset(d) {
+      selectedDate = new Date(d);
+      renderAll();
+    }
+    function changeMonth(delta) {
+      calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + delta, 1);
+      renderCalendar();
+    }
 
     function renderLessonsHTML(dow) {
       const list = SCHEDULE[dow] || [];
@@ -682,6 +706,7 @@
     function pickFromMonth(day) {
       selectedDate = new Date(calMonth.getFullYear(), calMonth.getMonth(), day);
       setCalMode("daily", document.querySelector("#view-cal .seg-btn"));
+      renderAll();
     }
 
     let touchX = 0;
@@ -689,36 +714,40 @@
     sw.addEventListener("touchstart", e => { touchX = e.changedTouches[0].screenX; }, { passive: true });
     sw.addEventListener("touchend", e => {
       const diff = e.changedTouches[0].screenX - touchX;
-      if (Math.abs(diff) > 45) { selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1)); renderCalendar(); }
+      if (Math.abs(diff) > 45) { selectedDate.setDate(selectedDate.getDate() + (diff < 0 ? 1 : -1)); renderAll(); }
     }, { passive: true });
 
     function addGoal(k, n) {
-      const wasDone = state.para >= 30 && state.prob >= 20;
-      state[k] = Math.min(k === "para" ? 30 : 20, state[k] + n);
-      const nowDone = state.para >= 30 && state.prob >= 20;
+      const dData = getDayData();
+      const wasDone = dData.para >= 30 && dData.prob >= 20;
+      dData[k] = Math.min(k === "para" ? 30 : 20, (dData[k] || 0) + n);
+      const nowDone = dData.para >= 30 && dData.prob >= 20;
       if (!wasDone && nowDone) state.streak += 1;
       save();
     }
-    function resetDaily() { state.para = 0; state.prob = 0; save(); }
+    function resetDaily() {
+      const dData = getDayData();
+      dData.para = 0;
+      dData.prob = 0;
+      save();
+    }
     function setMood(id) {
-      const key = getSelectedDayKey();
-      state.moodByDay[key] = state.moodByDay[key] === id ? null : id;
+      const dData = getDayData();
+      dData.mood = dData.mood === id ? null : id;
       save();
     }
 
     function addDidToday() {
       const v = document.getElementById("didTodayInput").value.trim();
       if (!v) return;
-      const key = getSelectedDayKey();
-      if (!state.didTodayByDay[key]) state.didTodayByDay[key] = [];
-      state.didTodayByDay[key].push({ id: Date.now(), text: v });
+      const dData = getDayData();
+      dData.didToday.push({ id: Date.now(), text: v });
       document.getElementById("didTodayInput").value = "";
       save();
     }
-
     function delDidToday(id) {
-      const key = getSelectedDayKey();
-      state.didTodayByDay[key] = (state.didTodayByDay[key] || []).filter(x => x.id !== id);
+      const dData = getDayData();
+      dData.didToday = dData.didToday.filter(x => x.id !== id);
       save();
     }
 
@@ -741,11 +770,16 @@
     function addNote() {
       const v = document.getElementById("noteInput").value.trim();
       if (!v) return;
-      state.notes.unshift({ id: Date.now(), text: v, date: new Date().toLocaleDateString("tr-TR") });
+      const dData = getDayData();
+      dData.notes.unshift({ id: Date.now(), text: v, date: selectedDate.toLocaleDateString("tr-TR") });
       document.getElementById("noteInput").value = "";
       save();
     }
-    function delNote(id) { state.notes = state.notes.filter(x => x.id !== id); save(); }
+    function delNote(id) {
+      const dData = getDayData();
+      dData.notes = dData.notes.filter(x => x.id !== id);
+      save();
+    }
 
     function setExamType(type, btn) {
       curExamType = type;
@@ -863,8 +897,8 @@
       }
     }
     function addFocusMinutes(mins) {
-      const k = TODAY_KEY();
-      state.focusByDay[k] = (state.focusByDay[k] || 0) + mins;
+      const dData = getDayData(TODAY_KEY());
+      dData.focusMin = (dData.focusMin || 0) + mins;
       save();
     }
     function syncTimerFromClock() {
@@ -920,7 +954,8 @@
       for (let i = -6; i <= 0; i++) {
         const d = new Date(); d.setDate(d.getDate() + i);
         const iso = formatDayKey(d);
-        days.push({ iso, lbl: d.toLocaleDateString("tr-TR", { weekday: "short" }), mins: state.focusByDay[iso] || 0 });
+        const mins = (state.dayDataByDay[iso] && state.dayDataByDay[iso].focusMin) || 0;
+        days.push({ iso, lbl: d.toLocaleDateString("tr-TR", { weekday: "short" }), mins });
       }
       const maxM = Math.max(25, ...days.map(x => x.mins));
       document.getElementById("todayFocusBadge").textContent = `Bugün: ${days[days.length - 1].mins} dk`;
@@ -956,13 +991,14 @@
       renderFocusChart();
 
       renderCalendar();
-      document.getElementById("paraTxt").textContent = `${state.para} / 30`;
-      document.getElementById("paraBar").style.width = `${(state.para/30)*100}%`;
-      document.getElementById("probTxt").textContent = `${state.prob} / 20`;
-      document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
 
-      const selKey = getSelectedDayKey();
-      const dayDidList = state.didTodayByDay[selKey] || [];
+      const dData = getDayData();
+      document.getElementById("paraTxt").textContent = `${dData.para || 0} / 30`;
+      document.getElementById("paraBar").style.width = `${((dData.para || 0) / 30) * 100}%`;
+      document.getElementById("probTxt").textContent = `${dData.prob || 0} / 20`;
+      document.getElementById("probBar").style.width = `${((dData.prob || 0) / 20) * 100}%`;
+
+      const dayDidList = dData.didToday || [];
       const badgeEl = document.getElementById("doneTodayBadge");
       if (badgeEl) {
         badgeEl.textContent = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
@@ -987,7 +1023,7 @@
         </div>
       `).join("") : '<div class="muted">Henüz görev eklenmedi.</div>';
 
-      const curMoodId = state.moodByDay[selKey] || null;
+      const curMoodId = dData.mood || null;
       document.getElementById("moodRow").innerHTML = MOODS.map(m => `
         <button class="mood-btn ${curMoodId === m.id ? "active" : ""}" onclick="setMood(${m.id})">
           ${m.ico}<span>${m.lbl}</span>
@@ -997,12 +1033,13 @@
       const mBox = document.getElementById("moodMsg");
       if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
 
-      document.getElementById("noteList").innerHTML = state.notes.length ? state.notes.map(n => `
+      const dayNotes = dData.notes || [];
+      document.getElementById("noteList").innerHTML = dayNotes.length ? dayNotes.map(n => `
         <div class="list-row">
           <div>${n.text} <span class="muted">(${n.date})</span></div>
           <button class="del" onclick="delNote(${n.id})">×</button>
         </div>
-      `).join("") : '<div class="muted">Henüz not eklemedin.</div>';
+      `).join("") : '<div class="muted">Bu gün için henüz not eklenmedi.</div>';
 
       document.getElementById("weakCount").textContent = state.weaks.filter(x => !x.done).length;
       document.getElementById("weakList").innerHTML = state.weaks.length ? state.weaks.map(x => `
