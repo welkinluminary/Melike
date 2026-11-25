@@ -300,11 +300,21 @@
           </div>
         </div>
 
-        <!-- Kendine Görev / Soru Hedefi Ekle -->
+<!-- Bugün Neler Yaptım? (Sadece seçili güne özel, başka güne taşmaz) -->
         <div class="card">
-          <div class="card-title"><span>📋 Tüm Görevler</span></div>
+          <div class="card-title"><span>✨ Bugün Neler Yaptım?</span><span class="badge" id="doneTodayBadge"></span></div>
           <div style="display:flex;gap:6px;">
-            <input type="text" id="myTaskInput" placeholder="Örn: 30 soru Fizik çöz, Türev tekrar et..." style="margin-bottom:0;" />
+            <input type="text" id="didTodayInput" placeholder="Bugün neler yaptın? (Örn: AYT Biyoloji tekrar ettim)" style="margin-bottom:0;" />
+            <button class="btn btn-soft" style="width:auto;padding:0 16px;" onclick="addDidToday()">Ekle</button>
+          </div>
+          <div id="didTodayList" style="margin-top:10px;"></div>
+        </div>
+
+        <!-- Sonraki Günlere Aktarılan Yapılacaklar (Tamamlanana kadar diğer günlerde de görünür) -->
+        <div class="card">
+          <div class="card-title"><span>🔁 Sonraki Günlere Aktarılan Yapılacaklar</span></div>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="myTaskInput" placeholder="Örn: 30 soru Fizik çöz, Paragraf testi bitir..." style="margin-bottom:0;" />
             <button class="btn btn-primary" style="width:auto;padding:0 16px;" onclick="addMyTask()">Ekle</button>
           </div>
           <div id="myTaskList" style="margin-top:10px;"></div>
