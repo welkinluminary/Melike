@@ -932,6 +932,22 @@
       document.getElementById("probTxt").textContent = `${state.prob} / 20`;
       document.getElementById("probBar").style.width = `${(state.prob/20)*100}%`;
 
+      const selKey = getSelectedDayKey();
+      const dayDidList = state.didTodayByDay[selKey] || [];
+      const badgeEl = document.getElementById("doneTodayBadge");
+      if (badgeEl) {
+        badgeEl.textContent = selectedDate.toLocaleDateString("tr-TR", { day: "numeric", month: "short" });
+      }
+      const didListEl = document.getElementById("didTodayList");
+      if (didListEl) {
+        didListEl.innerHTML = dayDidList.length ? dayDidList.map((item, idx) => `
+          <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
+            <span style="font-weight:600;">• ${idx + 1}. ${item.text}</span>
+            <button class="del" onclick="delDidToday(${item.id})">×</button>
+          </div>
+        `).join("") : '<div class="muted">Bu gün için henüz yapılan bir şey yazılmadı.</div>';
+      }
+
       document.getElementById("myTaskList").innerHTML = state.myTasks.length ? state.myTasks.map((t, idx) => `
         <div class="list-row" style="background:rgba(255,255,255,0.9);border:1px solid #ede9fe;border-radius:14px;padding:10px 12px;margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:10px;flex:1;">
@@ -941,16 +957,16 @@
           <button class="del" onclick="delMyTask(${t.id})">×</button>
         </div>
       `).join("") : '<div class="muted">Henüz görev eklenmedi.</div>';
-      
+
+      const curMoodId = state.moodByDay[selKey] || null;
       document.getElementById("moodRow").innerHTML = MOODS.map(m => `
-        <button class="mood-btn ${state.mood === m.id ? "active" : ""}" onclick="setMood(${m.id})">
+        <button class="mood-btn ${curMoodId === m.id ? "active" : ""}" onclick="setMood(${m.id})">
           ${m.ico}<span>${m.lbl}</span>
         </button>
       `).join("");
-      const selMood = MOODS.find(m => m.id === state.mood);
+      const selMood = MOODS.find(m => m.id === curMoodId);
       const mBox = document.getElementById("moodMsg");
       if (selMood) { mBox.style.display = "block"; mBox.textContent = selMood.msg; } else { mBox.style.display = "none"; }
-
       document.getElementById("noteList").innerHTML = state.notes.length ? state.notes.map(n => `
         <div class="list-row">
           <div>${n.text} <span class="muted">(${n.date})</span></div>
